@@ -4,6 +4,7 @@ import com.food.project.exception.*;
 import com.food.project.model.User;
 import com.food.project.model.dto.UserDTO;
 import com.food.project.model.dto.UserLoginDTO;
+import com.food.project.model.dto.UserResponseDTO;
 import com.food.project.repo.UserRepository;
 import com.food.project.validator.UserCreateRequestValidator;
 import com.food.project.validator.UserEditRequestValidator;
@@ -23,10 +24,10 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    private UserCreateRequestValidator createValidator = new UserCreateRequestValidator();
-    private UserEditRequestValidator editValidator = new UserEditRequestValidator();
-    private UserLoginRequestValidator loginValidator = new UserLoginRequestValidator();
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final UserCreateRequestValidator createValidator = new UserCreateRequestValidator();
+    private final UserEditRequestValidator editValidator = new UserEditRequestValidator();
+    private final UserLoginRequestValidator loginValidator = new UserLoginRequestValidator();
 
     public User createUser(UserDTO dto) {
         // validate dto first
@@ -39,6 +40,7 @@ public class UserService {
         u.setLocation(dto.getLocation());
         u.setPasswordHash(encoder.encode(dto.getPassword()));
         u.setAccessToken(UUID.randomUUID().toString());
+        u.setEmail(dto.getEmail());
 
         // save on db
         try {
@@ -72,11 +74,7 @@ public class UserService {
         try {
             Optional<User> optUser = userRepository.findByAccessToken(accessToken);
             if (optUser.isPresent()) {
-                try {
-                    return updateUser(optUser.get(), dto);
-                } catch(Exception e) {
-                    throw e;
-                }
+                return updateUser(optUser.get(), dto);
             } else {
                 throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
             }
@@ -91,6 +89,31 @@ public class UserService {
             userRepository.delete(u);
         } catch (EntityNotFoundException e) {
             throw new NotFoundException(ErrorStrings.NO_USER_FOUND.getMessage());
+        }
+    }
+
+    public void deleteUser(String accessToken, UserLoginDTO loginInfo) {
+        loginValidator.validate(loginInfo);
+        User found;
+
+        try {
+            Optional<User> u = userRepository.findByAccessToken(accessToken);
+            if (u.isPresent()) {
+                found = u.get();
+            } else {
+                throw new InternalServerException(ErrorStrings.INVALID_TOKEN.getMessage());
+            }
+        } catch (EntityNotFoundException e) {
+            throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
+        }
+
+        if (
+                encoder.matches(loginInfo.getPassword(), found.getPasswordHash()) &&
+                (loginInfo.getUsername().equals(found.getUsername()) || loginInfo.getPassword().equals(found.getUsername()))
+        ) {
+            deleteUser(found);
+        } else {
+            throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.name());
         }
     }
 
@@ -111,7 +134,7 @@ public class UserService {
         loginValidator.validate(loginInfo);
 
         try {
-            Optional<User> optUser = userRepository.findByUsername(loginInfo.getUsername());
+            Optional<User> optUser = userRepository.findByUsernameOrEmail(loginInfo.getUsername(), loginInfo.getEmail());
             if (optUser.isPresent()) {
                 var u = optUser.get();
                 if (encoder.matches(loginInfo.getPassword(), u.getPasswordHash())) {
@@ -122,6 +145,21 @@ public class UserService {
             throw new InternalServerException(ErrorStrings.INTERNAL_NO_RESULT.getMessage());
         } catch (EntityNotFoundException e) {
             throw new NotFoundException(ErrorStrings.INVALID_USERNAME.getMessage());
+        }
+    }
+
+    public UserResponseDTO getById(Long id) {
+        try {
+            Optional<User> optUser = userRepository.findById(id);
+            if (optUser.isPresent()) {
+                return new UserResponseDTO(optUser.get());
+            } else {
+                throw new NotFoundException(ErrorStrings.INVALID_ID.getMessage());
+            }
+        } catch (EntityNotFoundException e) {
+            throw new NotFoundException(ErrorStrings.INVALID_ID.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
         }
     }
 

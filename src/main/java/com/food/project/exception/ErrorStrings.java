@@ -10,7 +10,8 @@ public enum ErrorStrings {
     INTERNAL_UNKNOWN("Unknown internal server error"),
     NOT_FOUND("Not found"),
     CONFLICT("Conflicting fields"),
-    INTEGRITY("Integrity Violation");
+    INTEGRITY("Integrity Violation"),
+    INVALID_ID("No user was found with this ID");
     private final String message;
 
     ErrorStrings(String message) {

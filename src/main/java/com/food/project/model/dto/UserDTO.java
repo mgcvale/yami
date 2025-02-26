@@ -12,11 +12,13 @@ public class UserDTO {
     private String password;
     private String bio;
     private String location;
+    private String email;
 
-    public UserDTO(String username, String password, String bio, String location) {
+    public UserDTO(String username, String password, String bio, String location, String email) {
         this.username = username;
         this.password = password;
         this.bio = bio;
         this.location = location;
+        this.email = email;
     }
 }

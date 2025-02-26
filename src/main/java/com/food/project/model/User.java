@@ -1,5 +1,6 @@
 package com.food.project.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -32,6 +33,13 @@ public class User {
     @Column(nullable = false, name = "access_token", unique = true)
     private String accessToken;
 
+    @Column(nullable = false, name = "email", unique = true)
+    private String email;
+
+    @JsonIgnore
+    @Column(nullable = false, name = "role")
+    private Role role;
+
     // FKs
     @ManyToMany
     @JoinTable(
@@ -44,7 +52,7 @@ public class User {
     @ManyToMany(mappedBy = "following")
     private Set<User> followers = new HashSet<>();
 
-    public User(Long id, String username, String bio, String location, String passwordHash, String accessToken, Set<User> following, Set<User> followers) {
+    public User(Long id, String username, String bio, String location, String passwordHash, String accessToken, String email, Set<User> following, Set<User> followers) {
         this.id = id;
         this.username = username;
         this.bio = bio;
@@ -53,6 +61,8 @@ public class User {
         this.accessToken = accessToken;
         this.following = following;
         this.followers = followers;
+        this.email = email;
+        this.role = Role.USER;
     }
 
     public User() {}
