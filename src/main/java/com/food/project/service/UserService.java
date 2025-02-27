@@ -1,6 +1,7 @@
 package com.food.project.service;
 
 import com.food.project.exception.*;
+import com.food.project.model.Role;
 import com.food.project.model.User;
 import com.food.project.model.dto.UserDTO;
 import com.food.project.model.dto.UserLoginDTO;
@@ -10,6 +11,9 @@ import com.food.project.validator.UserCreateRequestValidator;
 import com.food.project.validator.UserEditRequestValidator;
 import com.food.project.validator.UserLoginRequestValidator;
 import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.exception.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,6 +33,8 @@ public class UserService {
     private final UserEditRequestValidator editValidator = new UserEditRequestValidator();
     private final UserLoginRequestValidator loginValidator = new UserLoginRequestValidator();
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     public User createUser(UserDTO dto) {
         // validate dto first
         createValidator.validate(dto);
@@ -41,12 +47,18 @@ public class UserService {
         u.setPasswordHash(encoder.encode(dto.getPassword()));
         u.setAccessToken(UUID.randomUUID().toString());
         u.setEmail(dto.getEmail());
+        u.setRole(Role.USER);
 
         // save on db
         try {
             return userRepository.save(u);
         } catch(DataIntegrityViolationException e) {
-            throw new ConflictException(ErrorStrings.CONFLICT_USERNAME.getMessage());
+            if (e.getCause() instanceof ConstraintViolationException) {
+                throw new ConflictException(ErrorStrings.CONFLICT_USERNAME.getMessage());
+            }
+            logger.info("Data integrity error: {}", (Object) e.getStackTrace());
+            e.printStackTrace();
+            throw new InternalServerException(ErrorStrings.INTEGRITY.getMessage());
         }
     }
 
