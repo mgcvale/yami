@@ -21,4 +21,39 @@ public class UserDTO {
         this.location = location;
         this.email = email;
     }
+
+    public UserDTO copy() {
+        return new UserDTO(
+                this.username,
+                this.password,
+                this.bio,
+                this.location,
+                this.email
+        );
+    }
+
+    public UserDTO withUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public UserDTO withPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
+    public UserDTO withBio(String bio) {
+        this.bio = bio;
+        return this;
+    }
+
+    public UserDTO withLocation(String location) {
+        this.location = location;
+        return this;
+    }
+
+    public UserDTO  withEmail(String email) {
+        this.email = email;
+        return this;
+    }
 }

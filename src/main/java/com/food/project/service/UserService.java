@@ -54,9 +54,10 @@ public class UserService {
             return userRepository.save(u);
         } catch(DataIntegrityViolationException e) {
             if (e.getCause() instanceof ConstraintViolationException) {
-                throw new ConflictException(ErrorStrings.CONFLICT_USERNAME.getMessage());
+                if (e.getMessage().contains("username_unique"))
+                    throw new ConflictException(ErrorStrings.CONFLICT_USERNAME.getMessage());
+                throw new ConflictException(ErrorStrings.CONFLICT_EMAIL.getMessage());
             }
-            logger.info("Data integrity error: {}", (Object) e.getStackTrace());
             e.printStackTrace();
             throw new InternalServerException(ErrorStrings.INTEGRITY.getMessage());
         }
@@ -72,11 +73,17 @@ public class UserService {
         if (dto.getUsername() != null) u.setUsername(dto.getUsername());
         if (dto.getBio() != null) u.setUsername(dto.getUsername());
         if (dto.getLocation() != null) u.setLocation(dto.getLocation());
+        if (dto.getEmail() != null) u.setEmail(dto.getEmail());
 
         try {
             return userRepository.save(u);
         } catch(DataIntegrityViolationException e) {
-            throw new ConflictException(ErrorStrings.CONFLICT_USERNAME.getMessage());
+            if (e.getCause() instanceof ConstraintViolationException) {
+                if (e.getMessage().contains("username_unique"))
+                    throw new ConflictException(ErrorStrings.CONFLICT_USERNAME.getMessage());
+                throw new ConflictException(ErrorStrings.CONFLICT_EMAIL.getMessage());
+            }
+            throw new InternalServerException(ErrorStrings.INTEGRITY.getMessage());
         }
     }
 
@@ -135,7 +142,7 @@ public class UserService {
             if (u.isPresent()) {
                 return u.get();
             } else {
-                throw new InternalServerException(ErrorStrings.INVALID_TOKEN.getMessage());
+                throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
             }
         } catch (EntityNotFoundException e) {
             throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
@@ -154,9 +161,9 @@ public class UserService {
                 }
                 throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
             }
-            throw new InternalServerException(ErrorStrings.INTERNAL_NO_RESULT.getMessage());
+            throw new UnauthorizedException(loginInfo.getEmail().isEmpty() ? ErrorStrings.INVALID_USERNAME.getMessage() : ErrorStrings.INVALID_EMAIL.getMessage());
         } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_USERNAME.getMessage());
+            throw new UnauthorizedException(loginInfo.getEmail().isEmpty() ? ErrorStrings.INVALID_USERNAME.getMessage() : ErrorStrings.INVALID_EMAIL.getMessage());
         }
     }
 

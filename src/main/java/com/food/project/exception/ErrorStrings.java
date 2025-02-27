@@ -11,7 +11,12 @@ public enum ErrorStrings {
     NOT_FOUND("Not found"),
     CONFLICT("Conflicting fields"),
     INTEGRITY("Integrity Violation"),
-    INVALID_ID("No user was found with this ID");
+    INVALID_ID("No user was found with this ID"),
+    INVALID_FIELDS("One or more fields provided were invalid"),
+    INVALID_EMAIL("The provided email is in an invalid format"),
+    CONFLICT_EMAIL("A user with this email already exists"),
+    SHORT_USERNAME("The username must be at least 3 characters long"),
+    SHORT_PASSWORD("The password must be at least 8 characters long");
     private final String message;
 
     ErrorStrings(String message) {

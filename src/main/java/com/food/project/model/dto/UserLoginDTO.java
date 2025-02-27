@@ -16,4 +16,9 @@ public class UserLoginDTO {
         this.username = username;
         this.password = password;
     }
+
+    public UserLoginDTO withEmail(String email) {
+        this.email = email;
+        return this;
+    }
 }
