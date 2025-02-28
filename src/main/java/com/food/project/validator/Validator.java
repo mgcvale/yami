@@ -19,14 +19,11 @@ public abstract class Validator<T> {
     }
 
     public void validate(T obj) throws RuntimeException {
-        System.out.println("Validation quantity: " + filters.entrySet().size());
         for (var entry : filters.entrySet()) {
-            System.out.println("Validating " + obj);
             if (!entry.getKey().test(obj)) {
                 System.out.println("Throwing exception due to validation check error");
                 throw entry.getValue();
             }
-            System.out.println("Validated check " + entry.getValue());
         }
     }
 }

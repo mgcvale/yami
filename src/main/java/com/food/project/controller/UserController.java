@@ -70,7 +70,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getUser(@PathVariable("id") Long id) {
+    public ResponseEntity<Object> getUser(@PathVariable(value = "id") Long id) {
         return ResponseEntity.ok().body(userService.getById(id).withoutSensitiveData());
     }
 

@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -80,5 +81,11 @@ public class GlobalExceptionHandler {
         logger.info("Handling GenericException: {}", e.getMessage());
         e.printStackTrace();
         return ResponseFactory.createErrorResponse(new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage()), 500);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Object> handleNoResourceFound(Exception e) {
+        logger.info("Handling NoResourceFoundException: {}", e.getMessage());
+        return ResponseFactory.createErrorResponse(new NotFoundException(ErrorStrings.INVALID_PATH.getMessage()), 404);
     }
 }

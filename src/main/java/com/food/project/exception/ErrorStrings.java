@@ -16,7 +16,8 @@ public enum ErrorStrings {
     INVALID_EMAIL("The provided email is in an invalid format"),
     CONFLICT_EMAIL("A user with this email already exists"),
     SHORT_USERNAME("The username must be at least 3 characters long"),
-    SHORT_PASSWORD("The password must be at least 8 characters long");
+    SHORT_PASSWORD("The password must be at least 8 characters long"),
+    INVALID_PATH("One or more path arguments were missing, or the path was invalid altogether");
     private final String message;
 
     ErrorStrings(String message) {

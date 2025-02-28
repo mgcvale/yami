@@ -71,7 +71,7 @@ public class UserService {
             u.setAccessToken(UUID.randomUUID().toString());
         }
         if (dto.getUsername() != null) u.setUsername(dto.getUsername());
-        if (dto.getBio() != null) u.setUsername(dto.getUsername());
+        if (dto.getBio() != null) u.setBio(dto.getBio());
         if (dto.getLocation() != null) u.setLocation(dto.getLocation());
         if (dto.getEmail() != null) u.setEmail(dto.getEmail());
 
@@ -177,6 +177,8 @@ public class UserService {
             }
         } catch (EntityNotFoundException e) {
             throw new NotFoundException(ErrorStrings.INVALID_ID.getMessage());
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
         } catch (Exception e) {
             throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
         }

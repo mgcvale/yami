@@ -20,7 +20,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -520,7 +519,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDeleteUserWithTokenAndIncorrectPassword() throws Exception {
+    public void testDeleteUserWithTokenAndUsernameAndIncorrectPassword() throws Exception {
         String token = createdUser.getAccessToken();
         UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), "wrongpassword");
         String json = objectMapper.writeValueAsString(loginInfo);
@@ -536,6 +535,25 @@ public class UserControllerTest {
         Optional<User> user = userRepository.findById(createdUser.getId());
         assertTrue(user.isPresent(), "User should not be deleted from the database");
     }
+
+    @Test
+    public void testDeleteUserWithTokenAndEmailAndIncorrectPassword() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO("", "wrongpassword").withEmail(defaultUser.getEmail());
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted from the database");
+    }
+
 
     @Test
     public void testDeleteUserWithTokenAndUsernameDifferentCapitalization() throws Exception {
@@ -575,6 +593,185 @@ public class UserControllerTest {
     }
 
 
+    @Test
+    public void testDeleteUserWithTokenAndUsernameAndPasswordWrongCapitalization() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), defaultUser.getPassword().toUpperCase());
+        String json = objectMapper.writeValueAsString(loginInfo);
 
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted due to case mismatch");
+    }
+
+    // PATCH TESTS
+
+    @Test
+    public void testUpdateUserWithValidToken() throws Exception {
+        UserDTO editedData = defaultUser.copy().withEmail("updatedemail@example.com").withBio("Updated bio").withLocation("Updated location").withUsername("UpdatedUsername");
+
+        mockMvc.perform(patch("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdUser.getAccessToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editedData)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.message").value(MessageStrings.USER_EDIT_SUCCESS.getMessage()));
+
+        Optional<User> opt = userRepository.findById(createdUser.getId());
+        assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited");
+        User user = opt.get();
+        assertEquals(user.getUsername(), "UpdatedUsername");
+        assertEquals(user.getEmail(), "updatedemail@example.com");
+        assertEquals(user.getBio(), "Updated bio");
+        assertEquals(user.getLocation(), "Updated location");
+    }
+
+    @Test
+    public void testUpdateUserWithInvalidToken() throws Exception {
+        UserDTO editedData = defaultUser.copy().withEmail("updatedemail@example.com").withBio("Updated bio").withLocation("Updated location").withUsername("UpdatedUsername");
+
+        mockMvc.perform(patch("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer invalidToken")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editedData)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_TOKEN.getMessage()));
+
+        Optional<User> opt = userRepository.findById(createdUser.getId());
+        assertTrue(opt.isPresent(), "User should be fetched with the same id after not being edited");
+        User user = opt.get();
+        assertEquals(user.getUsername(), defaultUser.getUsername());
+        assertEquals(user.getEmail(), defaultUser.getEmail());
+        assertEquals(user.getBio(), defaultUser.getBio());
+        assertEquals(user.getLocation(), defaultUser.getLocation());
+    }
+
+    @Test
+    public void testUpdateUserWithValidTokenAndJustSomeFields() throws Exception {
+        UserDTO editedData = defaultUser.copy().withEmail("updatedemail@example.com").withBio("Updated bio").withUsername(null).withLocation(null);
+
+        mockMvc.perform(patch("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdUser.getAccessToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editedData)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.message").value(MessageStrings.USER_EDIT_SUCCESS.getMessage()));
+
+        Optional<User> opt = userRepository.findById(createdUser.getId());
+        assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited");
+        User user = opt.get();
+        assertEquals(user.getUsername(), defaultUser.getUsername());
+        assertEquals(user.getEmail(), "updatedemail@example.com");
+        assertEquals(user.getBio(), "Updated bio");
+        assertEquals(user.getLocation(), defaultUser.getLocation());
+    }
+
+    @Test
+    public void testUpdateUserHashAndTokenWithValidTokenAfterPasswordEdit() throws Exception {
+        UserDTO editedData = defaultUser.copy().withPassword("DifferentPassword");
+
+        mockMvc.perform(patch("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdUser.getAccessToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editedData)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.message").value(MessageStrings.USER_EDIT_SUCCESS.getMessage()));
+
+        Optional<User> opt = userRepository.findById(createdUser.getId());
+        assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited");
+        User user = opt.get();
+
+        assertNotEquals(user.getPasswordHash(), createdUser.getPasswordHash());
+        assertNotEquals(user.getAccessToken(), createdUser.getAccessToken());
+
+        // the new password should continue to work
+        UserLoginDTO loginInfo = new UserLoginDTO(editedData.getUsername(), editedData.getPassword());
+
+        mockMvc.perform(post("/user/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginInfo)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value(user.getAccessToken()));
+
+        // the new token should also continue to work
+        mockMvc.perform(post("/user/login")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + user.getAccessToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value(user.getUsername()));
+    }
+
+    @Test
+    public void testUpdateUserProtectedFieldsWithValidToken() throws Exception {
+        String jsonData = "{\"role\":" + Role.ADMIN.ordinal() + "}";
+        mockMvc.perform(patch("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdUser.getAccessToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.message").value(MessageStrings.USER_EDIT_SUCCESS.getMessage()));
+
+        Optional<User> opt = userRepository.findById(createdUser.getId());
+        assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited with protected data");
+        User user = opt.get();
+
+        assertEquals(user.getRole(), createdUser.getRole());
+        assertNotEquals(user.getRole(), Role.ADMIN);
+    }
+
+
+    @Test
+    public void testGetUserById() throws Exception {
+        mockMvc.perform(get("/user/" + createdUser.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value(createdUser.getUsername()))
+                .andExpect(jsonPath("$.bio").value(createdUser.getBio()))
+                .andExpect(jsonPath("$.location").value(createdUser.getLocation()))
+                .andExpect(jsonPath("$.email").doesNotExist())
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.passwordHash").doesNotExist())
+                .andExpect(jsonPath("$.role").doesNotExist());
+    }
+
+    @Test
+    public void testGetUserWithInvalidId() throws Exception {
+        mockMvc.perform(get("/user/102938219038"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_ID.getMessage()))
+                .andExpect(jsonPath("$.username").doesNotExist())
+                .andExpect(jsonPath("$.bio").doesNotExist())
+                .andExpect(jsonPath("$.location").doesNotExist())
+                .andExpect(jsonPath("$.email").doesNotExist())
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.passwordHash").doesNotExist())
+                .andExpect(jsonPath("$.role").doesNotExist());
+    }
+
+    @Test
+    public void testGetUserWithoutId() throws Exception {
+        mockMvc.perform(get("/user/"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_PATH.getMessage()))
+                .andExpect(jsonPath("$.username").doesNotExist())
+                .andExpect(jsonPath("$.bio").doesNotExist())
+                .andExpect(jsonPath("$.location").doesNotExist())
+                .andExpect(jsonPath("$.email").doesNotExist())
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.passwordHash").doesNotExist())
+                .andExpect(jsonPath("$.role").doesNotExist());
+    }
 
 }
