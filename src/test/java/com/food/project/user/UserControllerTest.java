@@ -7,6 +7,7 @@ import com.food.project.model.User;
 import com.food.project.model.dto.UserDTO;
 import com.food.project.model.dto.UserLoginDTO;
 import com.food.project.repo.UserRepository;
+import com.food.project.util.MessageStrings;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -341,6 +342,239 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.accessToken").doesNotExist())
                 .andExpect(jsonPath("$.email").doesNotExist());
     }
+
+    // USER DELETION
+
+    @Test
+    public void testDeleteUserWithTokenEmailAndPassword() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(null, defaultUser.getPassword())
+                .withEmail(defaultUser.getEmail());
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.message").value(MessageStrings.USER_DELETE_SUCCESS.getMessage()));
+
+        Optional<User> deletedUser = userRepository.findById(createdUser.getId());
+        assertFalse(deletedUser.isPresent(), "User should be deleted from the database");
+    }
+
+    @Test
+    public void testDeleteUserWithTokenUsernameAndPassword() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), defaultUser.getPassword());
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.message").value(MessageStrings.USER_DELETE_SUCCESS.getMessage()));
+
+        Optional<User> deletedUser = userRepository.findById(createdUser.getId());
+        assertFalse(deletedUser.isPresent(), "User should be deleted from the database");
+    }
+
+    @Test
+    public void testDeleteUserWithoutTokenWithEmailAndPassword() throws Exception {
+        UserLoginDTO loginInfo = new UserLoginDTO(null, defaultUser.getPassword())
+                .withEmail(defaultUser.getEmail());
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_TOKEN.getMessage()));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted from the database");
+    }
+
+    @Test
+    public void testDeleteUserWithoutTokenWithUsernameAndPassword() throws Exception {
+        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), defaultUser.getPassword());
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_TOKEN.getMessage()));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted from the database");
+    }
+
+    @Test
+    public void testDeleteUserWithTokenButWithoutPasswordUsingUsername() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), null);
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("error"));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted from the database");
+    }
+
+    @Test
+    public void testDeleteUserWithTokenButWithoutPasswordUsingEmail() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(null, null)
+                .withEmail(defaultUser.getEmail());
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("error"));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted from the database");
+    }
+
+    @Test
+    public void testCreateUserAfterDeletion() throws Exception {
+        // Step 1: Delete the user
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), defaultUser.getPassword());
+        String jsonDelete = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonDelete))
+                .andExpect(status().isOk());
+
+        Optional<User> deletedUser = userRepository.findById(createdUser.getId());
+        assertFalse(deletedUser.isPresent(), "User should be deleted from the database");
+
+        // Step 2: Create a new user with the same username and email
+        UserDTO newUserDTO = new UserDTO(defaultUser.getUsername(), "newpassword", "newbio", "newlocation", defaultUser.getEmail());
+        String jsonCreate = objectMapper.writeValueAsString(newUserDTO);
+
+        mockMvc.perform(post("/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonCreate))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value(newUserDTO.getUsername()))
+                .andExpect(jsonPath("$.email").value(newUserDTO.getEmail()));
+
+        Optional<User> newUser = userRepository.findByUsername(newUserDTO.getUsername());
+        assertTrue(newUser.isPresent(), "New user should be created in the database");
+        assertEquals(newUserDTO.getEmail(), newUser.get().getEmail(), "New user should have the same email");
+    }
+
+    @Test
+    public void testDeleteUserWithTokenAndIncorrectUsername() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO("wrongusername", defaultUser.getPassword());
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted from the database");
+    }
+
+    @Test
+    public void testDeleteUserWithTokenAndIncorrectEmail() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(null, defaultUser.getPassword())
+                .withEmail("wrong@example.com");
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted from the database");
+    }
+
+    @Test
+    public void testDeleteUserWithTokenAndIncorrectPassword() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), "wrongpassword");
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted from the database");
+    }
+
+    @Test
+    public void testDeleteUserWithTokenAndUsernameDifferentCapitalization() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername().toUpperCase(), defaultUser.getPassword());
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted due to case mismatch");
+    }
+
+    @Test
+    public void testDeleteUserWithTokenAndEmailDifferentCapitalization() throws Exception {
+        String token = createdUser.getAccessToken();
+        UserLoginDTO loginInfo = new UserLoginDTO(null, defaultUser.getPassword())
+                .withEmail(defaultUser.getEmail().toUpperCase());
+        String json = objectMapper.writeValueAsString(loginInfo);
+
+        mockMvc.perform(delete("/user")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
+
+        Optional<User> user = userRepository.findById(createdUser.getId());
+        assertTrue(user.isPresent(), "User should not be deleted due to case mismatch");
+    }
+
+
 
 
 }

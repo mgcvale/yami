@@ -59,7 +59,7 @@ public class UserController {
     }
 
     @DeleteMapping("")
-    public ResponseEntity<Object> deleteUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestBody UserLoginDTO loginInfo) {
+    public ResponseEntity<Object> deleteUser(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader, @RequestBody UserLoginDTO loginInfo) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
         }

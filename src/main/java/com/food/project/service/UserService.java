@@ -128,11 +128,11 @@ public class UserService {
 
         if (
                 encoder.matches(loginInfo.getPassword(), found.getPasswordHash()) &&
-                (loginInfo.getUsername().equals(found.getUsername()) || loginInfo.getPassword().equals(found.getUsername()))
+                (loginInfo.getUsername().equals(found.getUsername()) || loginInfo.getEmail().equals(found.getEmail()))
         ) {
             deleteUser(found);
         } else {
-            throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.name());
+            throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
         }
     }
 

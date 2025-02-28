@@ -78,6 +78,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception e) {
         logger.info("Handling GenericException: {}", e.getMessage());
+        e.printStackTrace();
         return ResponseFactory.createErrorResponse(new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage()), 500);
     }
 }
