@@ -749,7 +749,7 @@ public class UserControllerTest {
         mockMvc.perform(get("/user/102938219038"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_ID.getMessage()))
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USER_ID.getMessage()))
                 .andExpect(jsonPath("$.username").doesNotExist())
                 .andExpect(jsonPath("$.bio").doesNotExist())
                 .andExpect(jsonPath("$.location").doesNotExist())

@@ -173,10 +173,10 @@ public class UserService {
             if (optUser.isPresent()) {
                 return new UserResponseDTO(optUser.get());
             } else {
-                throw new NotFoundException(ErrorStrings.INVALID_ID.getMessage());
+                throw new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage());
             }
         } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_ID.getMessage());
+            throw new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage());
         } catch (NotFoundException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {

@@ -3,7 +3,9 @@ package com.food.project.validator;
 import com.food.project.exception.BadRequestException;
 import com.food.project.exception.ErrorStrings;
 import com.food.project.model.dto.UserDTO;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserCreateRequestValidator extends Validator<UserDTO> {
 
     public UserCreateRequestValidator() {

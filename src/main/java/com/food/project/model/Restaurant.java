@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 @Table(name = "restaurants")
 @Entity
 public class Restaurant {
@@ -14,9 +13,16 @@ public class Restaurant {
     @Column(name = "restaurant_id")
     private Long id;
 
+    @Setter
     @Column(nullable = false, name = "name")
     private String name;
 
-    @Column(nullable = false, name = "photo")
+    @Setter
+    @Column(nullable = true, name = "photo")
     private String photoPath;
+
+    @Setter
+    @Column(nullable = false, name = "description")
+    private String description;
+
 }
