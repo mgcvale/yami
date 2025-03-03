@@ -41,6 +41,24 @@ public class RestaurantController {
         return ResponseFactory.createSuccessResponse(MessageStrings.RESTAURANT_CREATE_SUCCESS.getMessage());
     }
 
+    @PatchMapping
+    public ResponseEntity<Object> updateRestaurant(
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
+            @RequestParam("id") Integer id,
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("photo") MultipartFile photo) throws B2Exception {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
+        }
+        String token = authHeader.substring(7);
+
+        RestaurantDTO dto = RestaurantDTO.builder().name(name).description(description).photo(photo).build();
+        restaurantService.updateRestaurant(id, dto, token);
+
+        return ResponseFactory.createSuccessResponse(MessageStrings.RESTAURANT_UPDATE_SUCCESS.getMessage());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Object> getRestaurantData(@PathVariable Integer id) {
         return ResponseEntity.ok().body(restaurantService.getById(id));

@@ -10,6 +10,7 @@ import com.food.project.model.dto.RestaurantResposneDTO;
 import com.food.project.repo.RestaurantRepository;
 import com.food.project.util.ByteArrayMultipartFile;
 import com.food.project.validator.RestaurantCreateValidator;
+import com.food.project.validator.RestaurantUpdateRequestValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.apache.http.entity.ContentType;
 import org.hibernate.exception.ConstraintViolationException;
@@ -32,17 +33,20 @@ public class RestaurantService {
     private final RestaurantCreateValidator createValidator;
     private final BackblazeService backblazeService;
     private final UserService userService;
+    private final RestaurantUpdateRequestValidator updateValidator;
 
     public RestaurantService(
             final RestaurantRepository restaurantRepository,
             final UserService userService,
             final RestaurantCreateValidator createValidator,
-            final BackblazeService backblazeService
+            final BackblazeService backblazeService,
+            final RestaurantUpdateRequestValidator updateValidator
     ) {
         this.restaurantRepository = restaurantRepository;
         this.userService = userService;
         this.createValidator = createValidator;
         this.backblazeService = backblazeService;
+        this.updateValidator = updateValidator;
     }
 
     private void validateUser(String userToken) {
@@ -84,6 +88,50 @@ public class RestaurantService {
         }
 
         return r;
+    }
+
+    public Restaurant updateRestaurant(Integer id, RestaurantDTO dto, String userToken) throws B2Exception {
+        updateValidator.validate(dto);
+        validateUser(userToken);
+
+        Restaurant r;
+        try {
+            Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(id);
+            if (optionalRestaurant.isEmpty()) {
+                throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
+            }
+            r = optionalRestaurant.get();
+        } catch (EntityNotFoundException e) {
+            throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
+        }
+
+        if (dto.getName() != null) r.setName(dto.getName());
+        if (dto.getDescription() != null) r.setDescription(dto.getDescription());
+        if (dto.getPhoto() != null) {
+            String photoName = r.getId().toString() + "/" + "picture.jpg";
+            r.setPhotoPath(photoName);
+            restaurantRepository.save(r);
+
+            try {
+                dto.setPhoto(convertToJPEG(dto.getPhoto()));
+                backblazeService.uploadFile(dto.getPhoto(), photoName);
+            } catch (IOException e) {
+                throw new InternalServerException(ErrorStrings.INTERNAL_IO.getMessage());
+            }
+        }
+
+        try {
+            return restaurantRepository.save(r);
+        } catch (DataIntegrityViolationException e) {
+            if (e.getCause() instanceof ConstraintViolationException) {
+                throw new ConflictException(ErrorStrings.CONFLICT_RESTAURANT_NAME.getMessage());
+            }
+            throw new InternalServerException(ErrorStrings.INTEGRITY.getMessage());
+        }
     }
 
     public RestaurantResposneDTO getById(Integer id) {

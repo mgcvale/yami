@@ -5,7 +5,8 @@ public enum MessageStrings {
     USER_AUTH_SUCCESS("Success editing user"),
     USER_EDIT_SUCCESS("Success editing user"),
     USER_DELETE_SUCCESS("Success deleting user"),
-    RESTAURANT_CREATE_SUCCESS("Success creating restaurant");
+    RESTAURANT_CREATE_SUCCESS("Success creating restaurant"),
+    RESTAURANT_UPDATE_SUCCESS("Success updating restaurant");
 
     private final String message;
 

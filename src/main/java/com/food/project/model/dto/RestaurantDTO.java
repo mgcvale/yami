@@ -1,11 +1,13 @@
 package com.food.project.model.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
+@Builder
 public class RestaurantDTO {
 
     private String name;
