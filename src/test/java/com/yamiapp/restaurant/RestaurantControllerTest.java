@@ -509,7 +509,6 @@ public class RestaurantControllerTest {
                 photoBytes
         );
 
-
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photo)
                         .param("id", restaurant.getId().toString())
@@ -529,7 +528,6 @@ public class RestaurantControllerTest {
         assertEquals(updatedRestaurant.get().getName(), restaurant.getName());
         assertEquals(updatedRestaurant.get().getDescription(), restaurant.getDescription());
     }
-
 
     // RESTAURANT DELETION TESTS
 

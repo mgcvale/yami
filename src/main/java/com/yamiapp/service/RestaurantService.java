@@ -23,10 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import static com.yamiapp.util.ServiceUtils.convertToJPEG;
+
 import java.io.IOException;
 import java.util.Optional;
 
@@ -176,10 +174,14 @@ public class RestaurantService {
     }
 
     public RestaurantResposneDTO getById(Integer id) {
+        return new RestaurantResposneDTO(getRawById(id));
+    }
+
+    public Restaurant getRawById(Integer id) {
         try {
             Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(id);
             if (optionalRestaurant.isPresent()) {
-                return new RestaurantResposneDTO(optionalRestaurant.get());
+                return optionalRestaurant.get();
             } else {
                 throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
             }
@@ -207,22 +209,6 @@ public class RestaurantService {
         } catch (Exception e) {
             throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
         }
-    }
-
-    private MultipartFile convertToJPEG(MultipartFile multipartFile) throws IOException {
-        byte[] fileBytes = multipartFile.getBytes();
-
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(fileBytes);
-        BufferedImage bufferedImage = ImageIO.read(byteArrayInputStream);
-
-        if (bufferedImage == null) {
-            System.out.println("Buffered image is NULL");
-            throw new BadRequestException(ErrorStrings.INVALID_IMAGE_FILETYPE.getMessage());
-        }
-
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(bufferedImage, "JPEG", byteArrayOutputStream);
-        return  new ByteArrayMultipartFile(byteArrayOutputStream.toByteArray(), multipartFile.getName(), multipartFile.getOriginalFilename(), ContentType.IMAGE_JPEG.getMimeType());
     }
 
 }

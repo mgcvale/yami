@@ -34,6 +34,8 @@ public enum ErrorStrings {
     B2_UPSTREAM("The Backblaze service is unavaliable."),
     INTERNAL_IO("An internal I/O error occourred."),
 
+    CONFLICT_FOOD_NAME("A food with this name already exists in this restaurant"),
+
     FORBIDDEN_NOT_ADMIN("You must be an administrator to do this action.");
 
 
