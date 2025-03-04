@@ -8,6 +8,7 @@ import com.yamiapp.service.FoodService;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +42,16 @@ public class FoodController {
         return ResponseFactory.createSuccessResponse(MessageStrings.FOOD_CREATE_SUCCESS.getMessage());
     }
 
-    
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok().body(foodService.getById(id));
+    }
+
+    @GetMapping("/{id}/picture")
+    public ResponseEntity<Object> getPictureById(@PathVariable Integer id) throws B2Exception {
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(foodService.getImageById(id));
+    }
+
+
 
 }

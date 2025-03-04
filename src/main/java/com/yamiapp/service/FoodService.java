@@ -2,23 +2,24 @@ package com.yamiapp.service;
 
 import com.backblaze.b2.client.exceptions.B2Exception;
 import com.backblaze.b2.client.structures.B2FileVersion;
-import com.yamiapp.exception.ConflictException;
-import com.yamiapp.exception.ErrorStrings;
-import com.yamiapp.exception.ForbiddenException;
-import com.yamiapp.exception.InternalServerException;
+import com.yamiapp.exception.*;
 import com.yamiapp.model.Food;
 import com.yamiapp.model.Restaurant;
 import com.yamiapp.model.Role;
 import com.yamiapp.model.User;
 import com.yamiapp.model.dto.FoodDTO;
+import com.yamiapp.model.dto.FoodResponseDTO;
 import com.yamiapp.repo.FoodRepository;
 import com.yamiapp.validator.FoodCreateValidator;
+import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.core.io.Resource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static com.yamiapp.util.ServiceUtils.convertToJPEG;
 
@@ -97,5 +98,29 @@ public class FoodService {
 
     public Food updateFood() { return null; }
 
+    public FoodResponseDTO getById(Integer id) {
+        return new FoodResponseDTO(getRawById(id));
+    }
+
+    public Food getRawById(Integer id) {
+        try {
+            Optional<Food> optionalFood = foodRepository.findById(id);
+            if (optionalFood.isPresent()) {
+                return optionalFood.get();
+            } else {
+                throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
+            }
+        } catch (EntityNotFoundException e) {
+            throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
+        }
+    }
+
+    public Resource getImageById(Integer id) throws B2Exception {
+        return backblazeService.downloadFile(getRawById(id).getPhotoPath());
+    }
 
 }
