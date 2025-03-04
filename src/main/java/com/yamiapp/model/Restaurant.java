@@ -14,7 +14,7 @@ public class Restaurant {
     private Long id;
 
     @Setter
-    @Column(nullable = false, name = "name")
+    @Column(nullable = false, name = "name", unique = true)
     private String name;
 
     @Setter

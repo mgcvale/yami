@@ -58,7 +58,7 @@ public class RestaurantService {
 
     private void validateUser(String userToken) {
         User u = userService.getByToken(userToken);
-        if (u.getRole() != Role.ADMIN && u.getRole() != Role.MODERATOR) {
+        if (u.getRole().ordinal() <= Role.PRO_USER.ordinal()) {
             throw new ForbiddenException(ErrorStrings.FORBIDDEN_NOT_ADMIN.getMessage());
         }
     }
@@ -149,6 +149,11 @@ public class RestaurantService {
     @Transactional
     public void deleteRestaurant(Integer id, String userToken, UserLoginDTO loginDTO) throws B2Exception {
         loginValidator.validate(loginDTO);
+        validateUser(userToken);
+        String pwdToken = userService.getByPassword(loginDTO).getAccessToken();
+        if (!pwdToken.equals(userToken)) {
+            throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
+        }
 
         Restaurant r;
 
@@ -211,6 +216,7 @@ public class RestaurantService {
         BufferedImage bufferedImage = ImageIO.read(byteArrayInputStream);
 
         if (bufferedImage == null) {
+            System.out.println("Buffered image is NULL");
             throw new BadRequestException(ErrorStrings.INVALID_IMAGE_FILETYPE.getMessage());
         }
 

@@ -25,9 +25,18 @@ public class RestaurantUpdateRequestValidator extends Validator<RestaurantDTO>  
                 if (r.getPhoto().getContentType() == null) {
                     return false;
                 }
+                System.out.println(r.getPhoto().getContentType());
                 return r.getPhoto().getContentType().startsWith("image");
             }
             return true;
         }, new BadRequestException(ErrorStrings.INVALID_IMAGE_FILETYPE.getMessage()));
+        ruleFor(r -> {
+            if (r.getPhoto() != null) {
+                if (r.getPhoto().getSize() > 5 * 1024 * 1024) {
+                    return false;
+                }
+            }
+            return true;
+        }, new BadRequestException(ErrorStrings.FILE_TOO_LARGE.getMessage()));
     }
 }

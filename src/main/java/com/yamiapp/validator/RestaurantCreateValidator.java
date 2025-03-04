@@ -15,7 +15,12 @@ public class RestaurantCreateValidator extends Validator<RestaurantDTO> {
     @Override
     protected void initializeValidations() {
         ruleFor(r -> r.getName() != null, new BadRequestException(ErrorStrings.INVALID_FIELDS.getMessage()));
-        ruleFor(r -> r.getName().length() >= 3, new BadRequestException(ErrorStrings.SHORT_RESTAURANT_NAME.getMessage()));
+        ruleFor(r -> {
+            if (r.getName() != null) {
+                return  r.getName().length() >= 3;
+            }
+            return false;
+        }, new BadRequestException(ErrorStrings.SHORT_RESTAURANT_NAME.getMessage()));
         ruleFor(r -> r.getPhoto() != null, new BadRequestException(ErrorStrings.INVALID_FIELDS.getMessage()));
         ruleFor(r -> r.getDescription() != null, new BadRequestException(ErrorStrings.INVALID_FIELDS.getMessage()));
         ruleFor(r -> {
@@ -27,5 +32,11 @@ public class RestaurantCreateValidator extends Validator<RestaurantDTO> {
             }
             return r.getPhoto().getContentType().startsWith("image");
         }, new BadRequestException(ErrorStrings.INVALID_IMAGE_FILETYPE.getMessage()));
+        ruleFor(r -> {
+            if (r.getPhoto().getSize() > 5 * 1024 * 1024) {
+                return false;
+            }
+            return true;
+        }, new BadRequestException(ErrorStrings.FILE_TOO_LARGE.getMessage()));
     }
 }

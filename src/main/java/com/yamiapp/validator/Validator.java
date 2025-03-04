@@ -1,6 +1,6 @@
 package com.yamiapp.validator;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -10,7 +10,7 @@ public abstract class Validator<T> {
     protected abstract void initializeValidations();
 
     protected Validator() {
-        this.filters = new HashMap<>();
+        this.filters = new LinkedHashMap<>();
         initializeValidations();
     }
 

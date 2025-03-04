@@ -29,9 +29,9 @@ public class RestaurantController {
     @PostMapping
     public ResponseEntity<Object> createRestaurant(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("photo") MultipartFile photo) throws B2Exception {
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "photo", required = false) MultipartFile photo) throws B2Exception {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
         }
@@ -47,9 +47,9 @@ public class RestaurantController {
     public ResponseEntity<Object> updateRestaurant(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @RequestParam("id") Integer id,
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("photo") MultipartFile photo) throws B2Exception {
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "photo", required = false) MultipartFile photo) throws B2Exception {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
         }
