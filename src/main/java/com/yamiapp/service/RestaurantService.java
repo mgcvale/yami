@@ -10,12 +10,10 @@ import com.yamiapp.model.dto.RestaurantDTO;
 import com.yamiapp.model.dto.RestaurantResposneDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
 import com.yamiapp.repo.RestaurantRepository;
-import com.yamiapp.util.ByteArrayMultipartFile;
 import com.yamiapp.validator.RestaurantCreateValidator;
 import com.yamiapp.validator.RestaurantUpdateRequestValidator;
 import com.yamiapp.validator.UserLoginRequestValidator;
 import jakarta.persistence.EntityNotFoundException;
-import org.apache.http.entity.ContentType;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import static com.yamiapp.util.ServiceUtils.convertToJPEG;
+import static com.yamiapp.util.ServiceUtils.validateUser;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -54,18 +53,11 @@ public class RestaurantService {
         this.loginValidator = loginValidator;
     }
 
-    private void validateUser(String userToken) {
-        User u = userService.getByToken(userToken);
-        if (u.getRole().ordinal() <= Role.PRO_USER.ordinal()) {
-            throw new ForbiddenException(ErrorStrings.FORBIDDEN_NOT_ADMIN.getMessage());
-        }
-    }
-
     // will throw a B2Exception to be handled by B2ExceptionHandler
     @Transactional
     public Restaurant createRestaurant(RestaurantDTO dto, String userToken) throws B2Exception {
         createValidator.validate(dto);
-        validateUser(userToken);
+        validateUser(userService, userToken);
 
         Restaurant r = new Restaurant();
         r.setName(dto.getName());
@@ -102,7 +94,7 @@ public class RestaurantService {
 
     public Restaurant updateRestaurant(Integer id, RestaurantDTO dto, String userToken) throws B2Exception {
         updateValidator.validate(dto);
-        validateUser(userToken);
+        validateUser(userService, userToken);
 
         Restaurant r;
         try {
@@ -147,7 +139,7 @@ public class RestaurantService {
     @Transactional
     public void deleteRestaurant(Integer id, String userToken, UserLoginDTO loginDTO) throws B2Exception {
         loginValidator.validate(loginDTO);
-        validateUser(userToken);
+        validateUser(userService, userToken);
         String pwdToken = userService.getByPassword(loginDTO).getAccessToken();
         if (!pwdToken.equals(userToken)) {
             throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());

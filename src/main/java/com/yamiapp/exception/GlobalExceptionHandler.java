@@ -80,6 +80,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException e) {
         logger.info("Handling DataIntegrityException: {}", e.getMessage());
+        e.printStackTrace();
         if (e.getCause() instanceof ConstraintViolationException) {
             return ResponseFactory.createErrorResponse(new ConflictException(ErrorStrings.CONFLICT.getMessage()), HttpStatus.CONFLICT.value());
         }

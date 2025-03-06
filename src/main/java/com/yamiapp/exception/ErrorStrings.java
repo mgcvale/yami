@@ -1,5 +1,8 @@
 package com.yamiapp.exception;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorStrings {
     INVALID_TOKEN("Invalid access token"),
     INTERNAL_NO_RESULT("Database query returned no result"),
@@ -14,6 +17,7 @@ public enum ErrorStrings {
     INVALID_USER_ID("No user was found with this ID"),
     INVALID_FIELDS("One or more fields provided were invalid"),
     EMPTY_FIELDS("One or more necessary fields were empty"),
+    EMPTY_FIELDS_NULL_POINTER("One or more necessary objects were null"),
     INVALID_EMAIL("The provided email is in an invalid format"),
     CONFLICT_EMAIL("A user with this email already exists"),
     SHORT_USERNAME("The username must be at least 3 characters long"),
@@ -35,9 +39,9 @@ public enum ErrorStrings {
     INTERNAL_IO("An internal I/O error occourred."),
 
     CONFLICT_FOOD_NAME("A food with this name already exists in this restaurant"),
+    INVALID_FOOD_ID("No food was found with this ID"),
 
     FORBIDDEN_NOT_ADMIN("You must be an administrator to do this action.");
-
 
     private final String message;
 
@@ -45,7 +49,4 @@ public enum ErrorStrings {
         this.message = message;
     }
 
-    public String getMessage() {
-        return message;
-    }
 }

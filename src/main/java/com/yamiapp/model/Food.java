@@ -31,7 +31,7 @@ public class Food {
     @Column(nullable = true, name = "photo_id")
     private String photoId;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "restaurant_id", referencedColumnName = "restaurant_id", unique = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 }
