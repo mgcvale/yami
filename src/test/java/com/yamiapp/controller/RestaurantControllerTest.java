@@ -1,8 +1,8 @@
-package com.yamiapp.restaurant;
+package com.yamiapp.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yamiapp.config.TestConfig;
 import com.yamiapp.exception.ErrorStrings;
-import com.yamiapp.mock.FakeBackblazeService;
 import com.yamiapp.model.Restaurant;
 import com.yamiapp.model.Role;
 import com.yamiapp.model.User;
@@ -10,7 +10,6 @@ import com.yamiapp.model.dto.UserDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
 import com.yamiapp.repo.RestaurantRepository;
 import com.yamiapp.repo.UserRepository;
-import com.yamiapp.service.BackblazeService;
 import com.yamiapp.util.MessageStrings;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.AfterEach;
@@ -20,13 +19,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,6 +33,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
+import static com.yamiapp.util.TestUtils.createUserWithRole;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -41,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestConfig.class)
 public class RestaurantControllerTest {
 
     @Autowired
@@ -55,8 +56,6 @@ public class RestaurantControllerTest {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
-    @Autowired
-    private BackblazeService backblazeService;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final UserDTO adminUser = new UserDTO("adminuser", "adminpassword123", "admin bio", "admin location", "admin@example.com");
@@ -82,10 +81,9 @@ public class RestaurantControllerTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        createdAdminUser = createUserWithRole(adminUser, Role.ADMIN);
-        createdRegularUser = createUserWithRole(regularUser, Role.USER);
-        createdModeratorUser = createUserWithRole(moderatorUser, Role.MODERATOR);
-        backblazeService = new FakeBackblazeService();
+        createdAdminUser = createUserWithRole(mockMvc, objectMapper, userRepository, adminUser, Role.ADMIN);
+        createdRegularUser = createUserWithRole(mockMvc, objectMapper, userRepository, regularUser, Role.USER);
+        createdModeratorUser = createUserWithRole(mockMvc, objectMapper, userRepository, moderatorUser, Role.MODERATOR);
 
         try {
             testImageBytes = Files.readAllBytes(Paths.get("src/test/resources/test-image.png"));
@@ -93,20 +91,6 @@ public class RestaurantControllerTest {
             testImageBytes = new byte[1024]; // this will probably break some tests
         }
 
-    }
-
-    private User createUserWithRole(UserDTO userDTO, Role role) throws Exception {
-        String json = objectMapper.writeValueAsString(userDTO);
-        mockMvc.perform(post("/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isOk());
-
-        Optional<User> savedUser = userRepository.findByUsername(userDTO.getUsername());
-        assertTrue(savedUser.isPresent());
-        User user = savedUser.get();
-        user.setRole(role);
-        return userRepository.save(user);
     }
 
     // RESTAURANT CREATION TESTS

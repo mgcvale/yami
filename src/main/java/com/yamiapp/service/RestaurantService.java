@@ -4,8 +4,6 @@ import com.backblaze.b2.client.exceptions.B2Exception;
 import com.backblaze.b2.client.structures.B2FileVersion;
 import com.yamiapp.exception.*;
 import com.yamiapp.model.Restaurant;
-import com.yamiapp.model.Role;
-import com.yamiapp.model.User;
 import com.yamiapp.model.dto.RestaurantDTO;
 import com.yamiapp.model.dto.RestaurantResposneDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
@@ -14,6 +12,7 @@ import com.yamiapp.validator.RestaurantCreateValidator;
 import com.yamiapp.validator.RestaurantUpdateRequestValidator;
 import com.yamiapp.validator.UserLoginRequestValidator;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.Setter;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -32,7 +31,8 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final RestaurantCreateValidator createValidator;
-    private final BackblazeService backblazeService;
+    @Setter
+    private BackblazeService backblazeService;
     private final UserService userService;
     private final RestaurantUpdateRequestValidator updateValidator;
     private final UserLoginRequestValidator loginValidator;

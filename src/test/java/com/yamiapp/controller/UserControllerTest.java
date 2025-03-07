@@ -1,4 +1,4 @@
-package com.yamiapp.user;
+package com.yamiapp.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yamiapp.exception.ErrorStrings;

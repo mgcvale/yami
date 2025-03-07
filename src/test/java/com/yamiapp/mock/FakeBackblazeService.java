@@ -4,6 +4,7 @@ import com.backblaze.b2.client.structures.*;
 import com.yamiapp.service.BackblazeService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class FakeBackblazeService extends BackblazeService {
     private final Map<String, byte[]> files = new HashMap<>();
 
@@ -28,5 +30,9 @@ public class FakeBackblazeService extends BackblazeService {
     @Override
     public void deleteFile(@NotNull String filePath, @NotNull String fileName) {
         files.remove(fileName);
+    }
+
+    public void deleteAll() {
+        files.clear();
     }
 }
