@@ -319,11 +319,11 @@ public class RestaurantControllerTest {
         List<Restaurant> restaurants = restaurantRepository.findAll();
         assertEquals(0, restaurants.size());
     }
+
     // RESTAURANT UPDATE TESTS
 
     @Test
     public void testUpdateRestaurantWithAdminSuccess() throws Exception {
-        // First create a restaurant
         Restaurant restaurant = createTestRestaurant();
 
         MockMultipartFile photoFile = new MockMultipartFile(

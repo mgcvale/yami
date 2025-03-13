@@ -23,12 +23,10 @@ public enum ErrorStrings {
     SHORT_USERNAME("The username must be at least 3 characters long"),
     SHORT_PASSWORD("The password must be at least 8 characters long"),
     INVALID_PATH("One or more path arguments were missing, or the path was invalid altogether"),
-
     SHORT_RESTAURANT_NAME("The name of the restaurant must be at least 3 characters long"),
     RESTAURANT_IMAGE_UPSTREAM("Failed to upload restaurant picture due to backblaze upstream error"),
     CONFLICT_RESTAURANT_NAME("A Restaurant with this name already exists"),
     INVALID_RESTAURANT_ID("No restaurant was found with this ID"),
-
     INVALID_IMAGE_FILETYPE("The uploaded image is either in an unsupported format or not an image altogether."),
     FILE_TOO_LARGE("The file uploaded exceeded the maximum size of 5MB"),
     B2_FILE_NOT_FOUND("The file you requested wasn't found"),
@@ -37,11 +35,10 @@ public enum ErrorStrings {
     B2_INTERNAL("The Backblaze service is internally unavaliable"),
     B2_UPSTREAM("The Backblaze service is unavaliable."),
     INTERNAL_IO("An internal I/O error occourred."),
-
     CONFLICT_FOOD_NAME("A food with this name already exists in this restaurant"),
     INVALID_FOOD_ID("No food was found with this ID"),
-
-    FORBIDDEN_NOT_ADMIN("You must be an administrator to do this action.");
+    FORBIDDEN_NOT_ADMIN("You must be an administrator to do this action."),
+    METHOD_NOT_ALLOWED("The HTTP method used in this point isn't supported.");
 
     private final String message;
 

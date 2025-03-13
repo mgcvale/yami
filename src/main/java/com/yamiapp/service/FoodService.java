@@ -46,7 +46,7 @@ public class FoodService {
             final FoodCreateValidator createValidator,
             final UserService userService,
             RestaurantService restaurantService,
-            FoodUpdateValidator foodUpdateValidator, UserLoginRequestValidator userLoginRequestValidator, RestaurantRepository restaurantRepository) {
+            UserLoginRequestValidator userLoginRequestValidator, RestaurantRepository restaurantRepository, FoodUpdateValidator foodUpdateValidator) {
         this.foodRepository = foodRepository;
         this.backblazeService = backblazeService;
         this.createValidator = createValidator;
@@ -197,10 +197,10 @@ public class FoodService {
             if (optionalFood.isPresent()) {
                 return optionalFood.get();
             } else {
-                throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
+                throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
             }
         } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
+            throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
         } catch (NotFoundException e) {
             throw new NotFoundException(e.getMessage());
         } catch (Exception e) {

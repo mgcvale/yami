@@ -50,7 +50,7 @@ public class FoodController {
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "restaurantId", required = false) Integer restaurantId,
-            @RequestParam(value = "photo", required = false) MultipartFile photo
+            @RequestParam(required = false) MultipartFile photo
     ) throws B2Exception {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
@@ -58,7 +58,7 @@ public class FoodController {
         String token = authHeader.substring(7);
 
         FoodDTO foodDTO = FoodDTO.builder().restaurantId(restaurantId).name(name).description(description).photo(photo).build();
-
+        System.out.println(foodDTO.getPhoto());
         foodService.updateFood(foodId, foodDTO, token);
         return ResponseFactory.createSuccessResponse(MessageStrings.FOOD_UPDATE_SUCCESS.getMessage());
     }

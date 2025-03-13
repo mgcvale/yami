@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -128,5 +129,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestParameterException e) {
         logger.info("Handling MissingServletRequestPartException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new BadRequestException(ErrorStrings.EMPTY_FIELDS.getMessage()), HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+        logger.info("Handling HttpRequestMethodNotSupportedException: {}", e.getMessage());
+        return ResponseFactory.createErrorResponse(new MethodNotAllowedException(ErrorStrings.METHOD_NOT_ALLOWED.getMessage()), HttpStatus.METHOD_NOT_ALLOWED.value());
     }
 }

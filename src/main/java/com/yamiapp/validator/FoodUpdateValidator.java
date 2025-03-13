@@ -14,7 +14,6 @@ public class FoodUpdateValidator extends Validator<FoodDTO> {
 
     @Override
     protected void initializeValidations() {
-
         ruleFor(f -> {
             if (f.getPhoto() == null) {
                 return true; // photos can be null
