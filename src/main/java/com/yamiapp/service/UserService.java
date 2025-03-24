@@ -184,4 +184,8 @@ public class UserService {
         }
     }
 
+    public boolean userExists(Long userId) {
+        return userRepository.existsById(Math.toIntExact(userId));
+    }
+
 }

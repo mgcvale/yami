@@ -1,13 +1,19 @@
 package com.yamiapp.controller;
 
 import com.backblaze.b2.client.exceptions.B2Exception;
-import com.yamiapp.exception.ErrorStrings;
-import com.yamiapp.exception.UnauthorizedException;
+import com.yamiapp.model.Food;
+import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.dto.FoodDTO;
+import com.yamiapp.model.dto.FoodResponseDTO;
+import com.yamiapp.model.dto.FoodReviewResponseDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
+import com.yamiapp.service.FoodReviewService;
 import com.yamiapp.service.FoodService;
+import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +25,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class FoodController {
 
     private final FoodService foodService;
+    private final FoodReviewService foodReviewService;
 
-    public FoodController(FoodService foodService) {
+    public FoodController(FoodService foodService, final FoodReviewService foodReviewService) {
         this.foodService = foodService;
+        this.foodReviewService = foodReviewService;
     }
 
     @PostMapping
@@ -32,30 +40,24 @@ public class FoodController {
             @RequestParam(value = "restaurantId") Integer restaurantId,
             @RequestParam(value = "photo", required = false) MultipartFile photo
     ) throws B2Exception {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
-        }
-        String token = authHeader.substring(7);
+        String token = ControllerUtils.extractToken(authHeader);
 
         FoodDTO foodDTO = FoodDTO.builder().restaurantId(restaurantId).name(name).description(description).photo(photo).build();
 
-        foodService.createFood(foodDTO, token);
-        return ResponseFactory.createSuccessResponse(MessageStrings.FOOD_CREATE_SUCCESS.getMessage());
+        Food f = foodService.createFood(foodDTO, token);
+        return ResponseEntity.ok().body(new FoodResponseDTO(f));
     }
 
-    @PatchMapping
+    @PatchMapping("/{foodId}")
     public ResponseEntity<Object> updateFood(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
-            @RequestParam(value = "foodId", required = true) Integer foodId,
+            @PathVariable Integer foodId,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "restaurantId", required = false) Integer restaurantId,
             @RequestParam(required = false) MultipartFile photo
     ) throws B2Exception {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
-        }
-        String token = authHeader.substring(7);
+        String token = ControllerUtils.extractToken(authHeader);
 
         FoodDTO foodDTO = FoodDTO.builder().restaurantId(restaurantId).name(name).description(description).photo(photo).build();
         System.out.println(foodDTO.getPhoto());
@@ -63,18 +65,15 @@ public class FoodController {
         return ResponseFactory.createSuccessResponse(MessageStrings.FOOD_UPDATE_SUCCESS.getMessage());
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{foodId}")
     public ResponseEntity<Object> deleteFood(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "password", required = false) String password,
-            @RequestParam(value = "foodId") Integer foodId
+            @PathVariable Integer foodId
     ) throws B2Exception {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
-        }
-        String token = authHeader.substring(7);
+        String token = ControllerUtils.extractToken(authHeader);
 
         UserLoginDTO loginDTO = new UserLoginDTO(username, email, password);
         foodService.deleteFood(foodId, token, loginDTO);
@@ -89,6 +88,18 @@ public class FoodController {
     @GetMapping("/{id}/picture")
     public ResponseEntity<Object> getPictureById(@PathVariable Integer id) throws B2Exception {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(foodService.getImageById(id));
+    }
+
+    @GetMapping("/{id}/reviews")
+    public ResponseEntity<Object> getAllFoodReviews(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") Integer offset,
+            @RequestParam(defaultValue = "50") Integer count,
+            @RequestParam(required = false, defaultValue = "") String keyword
+    ) {
+        Page<FoodReview> foodReviews = foodReviewService.getFoodReviewsByFoodId(id, keyword, Pageable.ofSize(count).withPage(offset));
+        Page<FoodReviewResponseDTO> responseReviews = foodReviews.map(FoodReviewResponseDTO::new);
+        return ResponseEntity.ok().body(responseReviews);
     }
 
 

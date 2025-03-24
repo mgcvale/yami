@@ -20,3 +20,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("select u from User u where u.id = :id")
     Optional<User> findById(@Param("id") Long id);
 }
+
+/*
+
+ele vai procurar o usuario primeiro. Aí, ele vai procurar
+
+ */

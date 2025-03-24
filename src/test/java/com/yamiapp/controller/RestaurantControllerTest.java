@@ -333,9 +333,8 @@ public class RestaurantControllerTest {
                 testImageBytes
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant/" + restaurant.getId().toString())
                         .file(photoFile)
-                        .param("id", restaurant.getId().toString())
                         .param("name", "Updated Restaurant")
                         .param("description", "Updated description")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
@@ -364,9 +363,8 @@ public class RestaurantControllerTest {
                 testImageBytes
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant/" + restaurant.getId().toString())
                         .file(photoFile)
-                        .param("id", restaurant.getId().toString())
                         .param("name", "Updated By Moderator")
                         .param("description", "Moderator description")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdModeratorUser.getAccessToken())
@@ -393,9 +391,8 @@ public class RestaurantControllerTest {
                 testImageBytes
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant/" + restaurant.getId().toString())
                         .file(photoFile)
-                        .param("id", restaurant.getId().toString())
                         .param("name", "Should Not Update")
                         .param("description", "Should not update description")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdRegularUser.getAccessToken())
@@ -421,9 +418,8 @@ public class RestaurantControllerTest {
                 testImageBytes
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant/99999")
                         .file(photoFile)
-                        .param("id", "99999")
                         .param("name", "Non-existent Restaurant")
                         .param("description", "Should not update")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
@@ -441,8 +437,7 @@ public class RestaurantControllerTest {
         Restaurant restaurant = createTestRestaurant();
         String originalDescription = restaurant.getDescription();
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
-                        .param("id", restaurant.getId().toString())
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant/" + restaurant.getId().toString() )
                         .param("name", "Only Name Updated")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .with(request -> {
@@ -463,8 +458,7 @@ public class RestaurantControllerTest {
         Restaurant restaurant = createTestRestaurant();
         String originalName = restaurant.getName();
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
-                        .param("id", restaurant.getId().toString())
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant/" + restaurant.getId().toString())
                         .param("description", "Only description updated")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .with(request -> {
@@ -493,9 +487,8 @@ public class RestaurantControllerTest {
                 photoBytes
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant/" + restaurant.getId().toString() )
                         .file(photo)
-                        .param("id", restaurant.getId().toString())
                         .param("name", "Updated Restaurant")
                         .param("description", "Updated description")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
@@ -521,9 +514,8 @@ public class RestaurantControllerTest {
 
         UserLoginDTO loginInfo = new UserLoginDTO(adminUser.getUsername(), adminUser.getPassword());
 
-        mockMvc.perform(delete("/restaurant")
+        mockMvc.perform(delete("/restaurant/" + restaurant.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
-                        .param("id", restaurant.getId().toString())
                         .param("username", loginInfo.getUsername())
                         .param("password", loginInfo.getPassword())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
@@ -541,9 +533,8 @@ public class RestaurantControllerTest {
 
         UserLoginDTO loginInfo = new UserLoginDTO(moderatorUser.getUsername(), moderatorUser.getPassword());
 
-        mockMvc.perform(delete("/restaurant")
+        mockMvc.perform(delete("/restaurant/" + restaurant.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdModeratorUser.getAccessToken())
-                        .param("id", restaurant.getId().toString())
                         .param("username", loginInfo.getUsername())
                         .param("password", loginInfo.getPassword())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
@@ -560,9 +551,8 @@ public class RestaurantControllerTest {
 
         UserLoginDTO loginInfo = new UserLoginDTO(regularUser.getUsername(), regularUser.getPassword());
 
-        mockMvc.perform(delete("/restaurant")
+        mockMvc.perform(delete("/restaurant/" + restaurant.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdRegularUser.getAccessToken())
-                        .param("id", restaurant.getId().toString())
                         .param("username", loginInfo.getUsername())
                         .param("password", loginInfo.getPassword())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
@@ -578,9 +568,8 @@ public class RestaurantControllerTest {
     public void testDeleteRestaurantWithInvalidCredentials() throws Exception {
         Restaurant restaurant = createTestRestaurant();
 
-        mockMvc.perform(delete("/restaurant")
+        mockMvc.perform(delete("/restaurant/" + restaurant.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
-                        .param("id", restaurant.getId().toString())
                         .param("username", adminUser.getUsername())
                         .param("password", "adsdadasda")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
@@ -595,9 +584,8 @@ public class RestaurantControllerTest {
     public void testDeleteNonExistentRestaurant() throws Exception {
         UserLoginDTO loginInfo = new UserLoginDTO(adminUser.getUsername(), adminUser.getPassword());
 
-        mockMvc.perform(delete("/restaurant")
+        mockMvc.perform(delete("/restaurant/999999")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
-                        .param("id", "99999")
                         .param("username", loginInfo.getUsername())
                         .param("password", loginInfo.getPassword())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))

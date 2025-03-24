@@ -6,6 +6,7 @@ import com.yamiapp.exception.UnauthorizedException;
 import com.yamiapp.model.dto.RestaurantDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
 import com.yamiapp.service.RestaurantService;
+import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
 import org.apache.coyote.Response;
@@ -32,10 +33,7 @@ public class RestaurantController {
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "photo", required = false) MultipartFile photo) throws B2Exception {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
-        }
-        String token = authHeader.substring(7);
+        String token = ControllerUtils.extractToken(authHeader);
 
         RestaurantDTO dto = new RestaurantDTO(name, photo, description);
         restaurantService.createRestaurant(dto, token);
@@ -43,17 +41,14 @@ public class RestaurantController {
         return ResponseFactory.createSuccessResponse(MessageStrings.RESTAURANT_CREATE_SUCCESS.getMessage());
     }
 
-    @PatchMapping
+    @PatchMapping("/{id}")
     public ResponseEntity<Object> updateRestaurant(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
-            @RequestParam("id") Integer id,
+            @PathVariable Integer id,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "photo", required = false) MultipartFile photo) throws B2Exception {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
-        }
-        String token = authHeader.substring(7);
+        String token = ControllerUtils.extractToken(authHeader);
 
         RestaurantDTO dto = RestaurantDTO.builder().name(name).description(description).photo(photo).build();
         restaurantService.updateRestaurant(id, dto, token);
@@ -61,23 +56,18 @@ public class RestaurantController {
         return ResponseFactory.createSuccessResponse(MessageStrings.RESTAURANT_UPDATE_SUCCESS.getMessage());
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteRestaurant(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "password") String password,
-            @RequestParam("id") Integer id
+            @PathVariable Integer id
     ) throws B2Exception {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()), 401);
-        }
-        String token = authHeader.substring(7);
-
+        String token = ControllerUtils.extractToken(authHeader);
         UserLoginDTO dto = UserLoginDTO.builder().email(email).username(username).password(password).build();
 
         restaurantService.deleteRestaurant(id, token, dto);
-
         return ResponseFactory.createSuccessResponse(MessageStrings.RESTAURANT_DELETE_SUCCESS.getMessage());
     }
 

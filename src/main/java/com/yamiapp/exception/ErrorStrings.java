@@ -38,7 +38,12 @@ public enum ErrorStrings {
     CONFLICT_FOOD_NAME("A food with this name already exists in this restaurant"),
     INVALID_FOOD_ID("No food was found with this ID"),
     FORBIDDEN_NOT_ADMIN("You must be an administrator to do this action."),
-    METHOD_NOT_ALLOWED("The HTTP method used in this point isn't supported.");
+    METHOD_NOT_ALLOWED("The HTTP method used in this point isn't supported."),
+    BAD_FOOD_REVIEW_RATING("The Food review rating must be between 0 and 20."),
+    BAD_FOOD_REVIEW_LENGTH("The Food review rating must have between 2 and 512 characters."),
+    NOT_OWNER_OF_FOOD_REVIEW("You are not the owner of this review."),
+    INVALID_FOOD_REVIEW_ID("No food review was found with this ID");
+
 
     private final String message;
 

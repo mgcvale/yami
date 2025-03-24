@@ -19,13 +19,13 @@ public class RestaurantCreateValidator extends Validator<RestaurantDTO> {
             if (r.getName() != null) {
                 return  r.getName().length() >= 3;
             }
-            return false;
+            return true;
         }, new BadRequestException(ErrorStrings.SHORT_RESTAURANT_NAME.getMessage()));
         ruleFor(r -> r.getPhoto() != null, new BadRequestException(ErrorStrings.INVALID_FIELDS.getMessage()));
         ruleFor(r -> r.getDescription() != null, new BadRequestException(ErrorStrings.INVALID_FIELDS.getMessage()));
         ruleFor(r -> {
             if (r.getPhoto() == null) {
-                return false;
+                return true;
             }
             if (r.getPhoto().getContentType() == null) {
                 return false;

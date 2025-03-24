@@ -21,12 +21,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.support.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -70,18 +68,15 @@ public class FoodControllerTest {
     @Autowired
     private FakeBackblazeService backblazeService;
 
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final UserDTO adminUser = new UserDTO("adminuser", "adminpassword123", "admin bio", "admin location", "admin@example.com");
     private final UserDTO regularUser = new UserDTO("regularuser", "userpassword123", "user bio", "user location", "user@example.com");
     private final UserDTO moderatorUser = new UserDTO("moderatoruser", "modpassword123", "mod bio", "mod location", "mod@example.com");
-    private RestaurantDTO restaurantDTO;
 
     private User createdAdminUser;
     private User createdRegularUser;
     private User createdModeratorUser;
     private Restaurant createdRestaurant;
     private byte[] testImageBytes;
-    private RestaurantService restaurantService;
 
     @BeforeAll
     public static void initialize() {
@@ -133,8 +128,8 @@ public class FoodControllerTest {
                                 "-style strogonoff")
                         .param("restaurantId", createdRestaurant.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.FOOD_CREATE_SUCCESS.getMessage()));
+                .andExpect(jsonPath("$.name").value("strogonoff"))
+                .andExpect(jsonPath("$.restaurantName").value(createdRestaurant.getName()));
 
         List<Food> foods = foodRepository.findAll();
         assertEquals(foods.size(), 1);
@@ -155,8 +150,8 @@ public class FoodControllerTest {
                                 "-style strogonoff")
                         .param("restaurantId", createdRestaurant.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.FOOD_CREATE_SUCCESS.getMessage()));
+                .andExpect(jsonPath("$.name").value("strogonoff"))
+                .andExpect(jsonPath("$.restaurantName").value(createdRestaurant.getName()));
 
         List<Food> foods = foodRepository.findAll();
         assertEquals(foods.size(), 1);
@@ -202,9 +197,8 @@ public class FoodControllerTest {
                                 "-style strogonoff")
                         .param("restaurantId", createdRestaurant.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.FOOD_CREATE_SUCCESS.getMessage()));
-
+                .andExpect(jsonPath("$.name").value("strogonoff"))
+                .andExpect(jsonPath("$.restaurantName").value(createdRestaurant.getName()));
         List<Food> foods = foodRepository.findAll();
         assertEquals(foods.size(), 1);
         Food f = foods.getFirst();
@@ -257,8 +251,8 @@ public class FoodControllerTest {
                                 "-style strogonoff")
                         .param("restaurantId", createdRestaurant.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.FOOD_CREATE_SUCCESS.getMessage()));
+                .andExpect(jsonPath("$.name").value("strogonoff"))
+                .andExpect(jsonPath("$.restaurantName").value(createdRestaurant.getName()));
 
         List<Food> foods = foodRepository.findAll();
         assertEquals(foods.size(), 1);
@@ -322,12 +316,11 @@ public class FoodControllerTest {
                 testImageBytes
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/food")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/food/" + createdFood.getId().toString())
                     .file(photo)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                     .param("name", "newName")
                     .param("description", "newDescription")
-                    .param("foodId", createdFood.getId().toString())
                     .with(request -> { request.setMethod("PATCH"); return request; }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
@@ -351,12 +344,11 @@ public class FoodControllerTest {
                 testImageBytes
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/food")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/food/" + createdFood.getId().toString())
                         .file(newFoodPhoto)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdModeratorUser.getAccessToken())
                         .param("name", "newName")
                         .param("description", "newDescription")
-                        .param("foodId", createdFood.getId().toString())
                         .with(request -> { request.setMethod("PATCH"); return request; }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
@@ -381,12 +373,11 @@ public class FoodControllerTest {
                 testImageBytes
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/food")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/food/" + createdFood.getId().toString())
                         .file(newFoodPhoto)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdRegularUser.getAccessToken())
                         .param("name", "newName")
                         .param("description", "newDescription")
-                        .param("foodId", createdFood.getId().toString())
                         .with(request -> { request.setMethod("PATCH"); return request; }))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status").value("error"))
@@ -403,10 +394,9 @@ public class FoodControllerTest {
     public void testUpdateFoodWithMissingFieldsSucecss() throws Exception {
         Food createdFood = createTestFood();
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/food")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/food/" + createdFood.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .param("name", "newName")
-                        .param("foodId", createdFood.getId().toString())
                         .with(request -> { request.setMethod("PATCH"); return request; }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
@@ -429,9 +419,8 @@ public class FoodControllerTest {
                 photoBytes
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/food")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/food/" + createdFood.getId().toString())
                         .file(largePhoto)
-                        .param("foodId", createdFood.getId().toString())
                         .param("name", "New Name")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .with(request -> { request.setMethod("PATCH"); return request; }))
@@ -453,9 +442,7 @@ public class FoodControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .param("name", "newName")
                         .with(request -> { request.setMethod("PATCH"); return request; }))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.message").value(ErrorStrings.EMPTY_FIELDS.getMessage()));
+                .andExpect(status().isMethodNotAllowed());
 
         List<Food> foods = foodRepository.findAll();
         assertEquals(1, foods.size());
@@ -467,10 +454,9 @@ public class FoodControllerTest {
     public void testUpdateFoodWithInvalidIdError() throws Exception {
         Food createdFood = createTestFood();
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/food")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/food/903182")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .param("name", "newName")
-                        .param("foodId", "1000123112")
                         .with(request -> { request.setMethod("PATCH"); return request; }))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value("error"))
@@ -486,11 +472,10 @@ public class FoodControllerTest {
     public void testDeleteFoodWithAdminSuccess() throws Exception {
         Food toBeDeleted = createTestFood();
 
-        mockMvc.perform(delete("/food")
+        mockMvc.perform(delete("/food/" + toBeDeleted.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .param("username", adminUser.getUsername())
-                        .param("password", adminUser.getPassword())
-                        .param("foodId", toBeDeleted.getId().toString()))
+                        .param("password", adminUser.getPassword()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value(MessageStrings.FOOD_DELETE_SUCCESS.getMessage()));
@@ -503,11 +488,10 @@ public class FoodControllerTest {
     public void testDeleteFoodWithModeratorSuccess() throws Exception {
         Food toBeDeleted = createTestFood();
 
-        mockMvc.perform(delete("/food")
+        mockMvc.perform(delete("/food/" + toBeDeleted.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdModeratorUser.getAccessToken())
                         .param("username", moderatorUser.getUsername())
-                        .param("password", moderatorUser.getPassword())
-                        .param("foodId", toBeDeleted.getId().toString()))
+                        .param("password", moderatorUser.getPassword()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value(MessageStrings.FOOD_DELETE_SUCCESS.getMessage()));
@@ -520,11 +504,10 @@ public class FoodControllerTest {
     public void testDeleteFoodWithAdminEmail() throws Exception {
         Food toBeDeleted = createTestFood();
 
-        mockMvc.perform(delete("/food")
+        mockMvc.perform(delete("/food/" + toBeDeleted.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .param("email", adminUser.getEmail())
-                        .param("password", adminUser.getPassword())
-                        .param("foodId", toBeDeleted.getId().toString()))
+                        .param("password", adminUser.getPassword()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value(MessageStrings.FOOD_DELETE_SUCCESS.getMessage()));
@@ -537,10 +520,9 @@ public class FoodControllerTest {
     public void testDeleteFoodWithoutPasswordError() throws Exception {
         Food toBeDeleted = createTestFood();
 
-        mockMvc.perform(delete("/food")
+        mockMvc.perform(delete("/food/" + toBeDeleted.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
-                        .param("username", adminUser.getUsername())
-                        .param("foodId", toBeDeleted.getId().toString()))
+                        .param("username", adminUser.getUsername()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
@@ -553,11 +535,10 @@ public class FoodControllerTest {
     public void testDeleteFoodWithInvalidPasswordError() throws Exception {
         Food toBeDeleted = createTestFood();
 
-        mockMvc.perform(delete("/food")
+        mockMvc.perform(delete("/food/" + toBeDeleted.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .param("username", adminUser.getUsername())
-                        .param("password", "wrongpassword012983")
-                        .param("foodId", toBeDeleted.getId().toString()))
+                        .param("password", "wrongpassword012983"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
@@ -570,11 +551,10 @@ public class FoodControllerTest {
     public void testDeleteFoodWithInvalidtokenError() throws Exception {
         Food toBeDeleted = createTestFood();
 
-        mockMvc.perform(delete("/food")
+        mockMvc.perform(delete("/food/" + toBeDeleted.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer 123")
                         .param("username", adminUser.getUsername())
-                        .param("password", adminUser.getPassword())
-                        .param("foodId", toBeDeleted.getId().toString()))
+                        .param("password", adminUser.getPassword()))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_TOKEN.getMessage()));
@@ -587,10 +567,9 @@ public class FoodControllerTest {
     public void testDeleteFoodWithoutTokenError() throws Exception {
         Food toBeDeleted = createTestFood();
 
-        mockMvc.perform(delete("/food")
+        mockMvc.perform(delete("/food/" + toBeDeleted.getId().toString())
                         .param("username", adminUser.getUsername())
-                        .param("password", adminUser.getPassword())
-                        .param("foodId", toBeDeleted.getId().toString()))
+                        .param("password", adminUser.getPassword()))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_TOKEN.getMessage()));
@@ -603,11 +582,10 @@ public class FoodControllerTest {
     public void testDeleteFoodWithRegularUserError() throws Exception {
         Food toBeDeleted = createTestFood();
 
-        mockMvc.perform(delete("/food")
+        mockMvc.perform(delete("/food/" + toBeDeleted.getId().toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdRegularUser.getAccessToken())
                         .param("username", regularUser.getUsername())
-                        .param("password", regularUser.getPassword())
-                        .param("foodId", toBeDeleted.getId().toString()))
+                        .param("password", regularUser.getPassword()))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value(ErrorStrings.FORBIDDEN_NOT_ADMIN.getMessage()));
@@ -624,9 +602,7 @@ public class FoodControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .param("username", adminUser.getUsername())
                         .param("password", adminUser.getPassword()))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.message").value(ErrorStrings.EMPTY_FIELDS.getMessage()));
+                .andExpect(status().isMethodNotAllowed());
 
         List<Food> foods = foodRepository.findAll();
         assertEquals(1, foods.size());
@@ -636,11 +612,10 @@ public class FoodControllerTest {
     public void testDeleteFoodWithInvalidIdError() throws Exception {
         Food toBeDeleted = createTestFood();
 
-        mockMvc.perform(delete("/food")
+        mockMvc.perform(delete("/food/120938")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
                         .param("username", adminUser.getUsername())
-                        .param("password", adminUser.getPassword())
-                        .param("foodId", "1039812"))
+                        .param("password", adminUser.getPassword()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_FOOD_ID.getMessage()));

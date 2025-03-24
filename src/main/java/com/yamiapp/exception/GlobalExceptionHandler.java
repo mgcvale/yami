@@ -136,4 +136,10 @@ public class GlobalExceptionHandler {
         logger.info("Handling HttpRequestMethodNotSupportedException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new MethodNotAllowedException(ErrorStrings.METHOD_NOT_ALLOWED.getMessage()), HttpStatus.METHOD_NOT_ALLOWED.value());
     }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<Object> handleInvalidToken(InvalidTokenException e) {
+        logger.info("Handling InvalidTokenException: {}", e.getMessage());
+        return ResponseFactory.createErrorResponse(new UnauthorizedException(e.getMessage()), HttpStatus.UNAUTHORIZED.value());
+    }
 }

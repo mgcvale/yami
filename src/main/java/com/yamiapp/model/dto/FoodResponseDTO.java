@@ -8,17 +8,21 @@ import lombok.Setter;
 @Setter
 public class FoodResponseDTO {
 
+    private Long id;
     private String name;
     private String description;
     private Integer restaurantId;
+    private String restaurantName;
 
-    public FoodResponseDTO(String name, String description, Integer restaurantId) {
+    public FoodResponseDTO(Long id, String name, String description, Integer restaurantId, String restaurantName) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.restaurantId = restaurantId;
+        this.restaurantName = restaurantName;
     }
 
     public FoodResponseDTO(Food f) {
-        this(f.getName(), f.getDescription(), Math.toIntExact(f.getRestaurant().getId()));
+        this(f.getId(), f.getName(), f.getDescription(), Math.toIntExact(f.getRestaurant().getId()), f.getRestaurant().getName());
     }
 }

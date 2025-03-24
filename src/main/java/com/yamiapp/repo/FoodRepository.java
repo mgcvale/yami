@@ -1,4 +1,5 @@
 package com.yamiapp.repo;
+import com.yamiapp.model.dto.FoodDTO;
 
 import com.yamiapp.model.Food;
 import org.springframework.data.jpa.repository.JpaRepository;
