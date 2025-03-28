@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static com.yamiapp.util.ServiceUtils.convertToJPEG;
-import static com.yamiapp.util.ServiceUtils.validateUser;
+import static com.yamiapp.util.ServiceUtils.validateModeratorUser;
 
 @Service
 public class FoodService {
@@ -60,7 +60,7 @@ public class FoodService {
 
     @Transactional
     public Food createFood(FoodDTO foodDTO, String accessToken) throws B2Exception {
-        validateUser(userService, accessToken);
+        validateModeratorUser(userService, accessToken);
         createValidator.validate(foodDTO);
 
         // get restaurant from ID
@@ -105,7 +105,7 @@ public class FoodService {
     @Transactional
     public Food updateFood(Integer id, FoodDTO foodDTO, String accessToken) throws B2Exception {
         updateValidator.validate(foodDTO);
-        validateUser(userService, accessToken);
+        validateModeratorUser(userService, accessToken);
 
         Food f;
 
@@ -150,7 +150,7 @@ public class FoodService {
     @Transactional
     public void deleteFood(Integer id, String userToken, UserLoginDTO loginDTO) throws B2Exception {
         userLoginRequestValidator.validate(loginDTO);
-        validateUser(userService, userToken);
+        validateModeratorUser(userService, userToken);
         String pwdToken = userService.getByPassword(loginDTO).getAccessToken();
         if (!pwdToken.equals(userToken)) {
             throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());

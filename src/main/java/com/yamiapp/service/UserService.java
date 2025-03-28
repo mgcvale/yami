@@ -137,6 +137,9 @@ public class UserService {
     }
 
     public User getByToken(String accessToken) {
+        if (accessToken == null) {
+            throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
+        }
         try {
             Optional<User> u = userRepository.findByAccessToken(accessToken);
             if (u.isPresent()) {
@@ -148,7 +151,6 @@ public class UserService {
             throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
         }
     }
-
     public User getByPassword(UserLoginDTO loginInfo) {
         loginValidator.validate(loginInfo);
 
@@ -167,11 +169,11 @@ public class UserService {
         }
     }
 
-    public UserResponseDTO getById(Long id) {
+    public User getById(Long id) {
         try {
             Optional<User> optUser = userRepository.findById(id);
             if (optUser.isPresent()) {
-                return new UserResponseDTO(optUser.get());
+                return optUser.get();
             } else {
                 throw new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage());
             }

@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import static com.yamiapp.util.ServiceUtils.convertToJPEG;
-import static com.yamiapp.util.ServiceUtils.validateUser;
+import static com.yamiapp.util.ServiceUtils.validateModeratorUser;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -57,7 +57,7 @@ public class RestaurantService {
     @Transactional
     public Restaurant createRestaurant(RestaurantDTO dto, String userToken) throws B2Exception {
         createValidator.validate(dto);
-        validateUser(userService, userToken);
+        validateModeratorUser(userService, userToken);
 
         Restaurant r = new Restaurant();
         r.setName(dto.getName());
@@ -94,7 +94,7 @@ public class RestaurantService {
 
     public Restaurant updateRestaurant(Integer id, RestaurantDTO dto, String userToken) throws B2Exception {
         updateValidator.validate(dto);
-        validateUser(userService, userToken);
+        validateModeratorUser(userService, userToken);
 
         Restaurant r;
         try {
@@ -139,7 +139,7 @@ public class RestaurantService {
     @Transactional
     public void deleteRestaurant(Integer id, String userToken, UserLoginDTO loginDTO) throws B2Exception {
         loginValidator.validate(loginDTO);
-        validateUser(userService, userToken);
+        validateModeratorUser(userService, userToken);
         String pwdToken = userService.getByPassword(loginDTO).getAccessToken();
         if (!pwdToken.equals(userToken)) {
             throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());

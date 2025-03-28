@@ -56,8 +56,6 @@ public class RestaurantControllerTest {
     @Autowired
     private RestaurantRepository restaurantRepository;
 
-
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final UserDTO adminUser = new UserDTO("adminuser", "adminpassword123", "admin bio", "admin location", "admin@example.com");
     private final UserDTO regularUser = new UserDTO("regularuser", "userpassword123", "user bio", "user location", "user@example.com");
     private final UserDTO moderatorUser = new UserDTO("moderatoruser", "modpassword123", "mod bio", "mod location", "mod@example.com");

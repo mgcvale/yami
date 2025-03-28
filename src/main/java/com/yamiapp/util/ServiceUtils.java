@@ -34,11 +34,12 @@ public class ServiceUtils {
     }
 
 
-    public static void validateUser(UserService userService, String userToken) {
+    public static User validateModeratorUser(UserService userService, String userToken) {
         User u = userService.getByToken(userToken);
         if (u.getRole().ordinal() <= Role.PRO_USER.ordinal()) {
             throw new ForbiddenException(ErrorStrings.FORBIDDEN_NOT_ADMIN.getMessage());
         }
+        return u;
     }
 
 }

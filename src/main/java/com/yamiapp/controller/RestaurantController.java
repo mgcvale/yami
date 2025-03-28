@@ -9,7 +9,6 @@ import com.yamiapp.service.RestaurantService;
 import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

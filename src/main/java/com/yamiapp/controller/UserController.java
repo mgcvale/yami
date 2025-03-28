@@ -68,7 +68,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getUser(@PathVariable(value = "id") Long id) {
-        return ResponseEntity.ok().body(userService.getById(id).withoutSensitiveData());
+        return ResponseEntity.ok().body(new UserResponseDTO(userService.getById(id)).withoutSensitiveData());
     }
 
     @GetMapping("/{id}/reviews")
