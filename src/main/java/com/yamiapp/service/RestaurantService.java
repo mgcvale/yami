@@ -140,7 +140,7 @@ public class RestaurantService {
     public void deleteRestaurant(Integer id, String userToken, UserLoginDTO loginDTO) throws B2Exception {
         loginValidator.validate(loginDTO);
         validateModeratorUser(userService, userToken);
-        String pwdToken = userService.getByPassword(loginDTO).getAccessToken();
+        String pwdToken = userService.getRawByPassword(loginDTO).getAccessToken();
         if (!pwdToken.equals(userToken)) {
             throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
         }

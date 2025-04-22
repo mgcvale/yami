@@ -102,5 +102,13 @@ public class FoodController {
         return ResponseEntity.ok().body(responseReviews);
     }
 
+    @GetMapping("/{id}/average_rating")
+    public ResponseEntity<Object> getAverageRating(
+            @PathVariable Long id
+    ) {
+        double avg = foodService.getAverageRating(id);
+        return new ResponseFactory.JsonResponseChain().add("average", avg).build();
+    }
+
 
 }

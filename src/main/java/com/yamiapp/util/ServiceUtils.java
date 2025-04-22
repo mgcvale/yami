@@ -35,7 +35,7 @@ public class ServiceUtils {
 
 
     public static User validateModeratorUser(UserService userService, String userToken) {
-        User u = userService.getByToken(userToken);
+        User u = userService.getRawByToken(userToken);
         if (u.getRole().ordinal() <= Role.PRO_USER.ordinal()) {
             throw new ForbiddenException(ErrorStrings.FORBIDDEN_NOT_ADMIN.getMessage());
         }

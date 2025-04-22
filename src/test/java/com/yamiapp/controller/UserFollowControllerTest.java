@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yamiapp.config.TestConfig;
 import com.yamiapp.exception.ErrorStrings;
 import com.yamiapp.model.User;
+import com.yamiapp.model.dto.UserCountsDTO;
 import com.yamiapp.model.dto.UserDTO;
 import com.yamiapp.repo.UserFollowRepository;
 import com.yamiapp.repo.UserRepository;
@@ -77,11 +78,11 @@ public class UserFollowControllerTest {
 
     @BeforeEach
     public void setup() {
-        createdUser1 = userService.createUser(user1);
-        createdUser2 = userService.createUser(user2);
-        createdUser3 = userService.createUser(user3);
-        createdUser4 = userService.createUser(user4);
-        createdUser5 = userService.createUser(user5);
+        createdUser1 = userService.createRawUser(user1);
+        createdUser2 = userService.createRawUser(user2);
+        createdUser3 = userService.createRawUser(user3);
+        createdUser4 = userService.createRawUser(user4);
+        createdUser5 = userService.createRawUser(user5);
     }
 
     @Test
@@ -93,11 +94,18 @@ public class UserFollowControllerTest {
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value(MessageStrings.FOLLOW_CREATE_SUCCESS.getMessage()));
 
-        User refreshedUser1 = userService.getById(createdUser1.getId());
-        User refreshedUser2 = userService.getById(createdUser2.getId());
+        User refreshedUser1 = userService.getRawById(createdUser1.getId());
+        User refreshedUser2 = userService.getRawById(createdUser2.getId());
 
         assertTrue(refreshedUser1.getFollowing().contains(refreshedUser2));
         assertTrue(refreshedUser2.getFollowers().contains(refreshedUser1));
+
+        mockMvc.perform(get("/user/" + refreshedUser1.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.followingCount").value(1));
+
+        UserCountsDTO userCounts = userService.getUserCounts(refreshedUser1.getId());
+        assertEquals(userCounts.getFollowingCount(), 1);
     }
 
     @Test
@@ -119,7 +127,7 @@ public class UserFollowControllerTest {
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value(ErrorStrings.CANNOT_FOLLOW_ONESELF.getMessage()));
 
-        User refreshedUser1 = userService.getById(createdUser1.getId());
+        User refreshedUser1 = userService.getRawById(createdUser1.getId());
         assertFalse(refreshedUser1.getFollowing().contains(refreshedUser1));
         assertFalse(refreshedUser1.getFollowers().contains(refreshedUser1));
     }
@@ -133,7 +141,7 @@ public class UserFollowControllerTest {
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USER_ID.getMessage()));
 
-        User refreshedUser1 = userService.getById(createdUser1.getId());
+        User refreshedUser1 = userService.getRawById(createdUser1.getId());
         assertTrue(refreshedUser1.getFollowing().isEmpty());
     }
 
@@ -147,8 +155,8 @@ public class UserFollowControllerTest {
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value(MessageStrings.FOLLOW_CREATE_SUCCESS.getMessage()));
 
-        User refreshedUser1 = userService.getById(createdUser1.getId());
-        User refreshedUser2 = userService.getById(createdUser2.getId());
+        User refreshedUser1 = userService.getRawById(createdUser1.getId());
+        User refreshedUser2 = userService.getRawById(createdUser2.getId());
 
         assertTrue(refreshedUser1.getFollowing().contains(refreshedUser2));
         assertTrue(refreshedUser2.getFollowers().contains(refreshedUser1));
@@ -164,8 +172,8 @@ public class UserFollowControllerTest {
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value(MessageStrings.FOLLOW_CREATE_SUCCESS.getMessage()));
 
-        User refreshedUser1 = userService.getById(createdUser1.getId());
-        User refreshedUser2 = userService.getById(createdUser2.getId());
+        User refreshedUser1 = userService.getRawById(createdUser1.getId());
+        User refreshedUser2 = userService.getRawById(createdUser2.getId());
 
         assertTrue(refreshedUser1.getFollowing().contains(refreshedUser2));
         assertTrue(refreshedUser2.getFollowers().contains(refreshedUser1));
@@ -185,8 +193,8 @@ public class UserFollowControllerTest {
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value(MessageStrings.FOLLOW_DELETE_SUCCESS.getMessage()));
 
-        User refreshedUser1 = userService.getById(createdUser1.getId());
-        User refreshedUser2 = userService.getById(createdUser2.getId());
+        User refreshedUser1 = userService.getRawById(createdUser1.getId());
+        User refreshedUser2 = userService.getRawById(createdUser2.getId());
 
         assertFalse(refreshedUser1.getFollowing().contains(refreshedUser2));
         assertFalse(refreshedUser2.getFollowers().contains(refreshedUser1));
@@ -201,8 +209,8 @@ public class UserFollowControllerTest {
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value(MessageStrings.FOLLOW_DELETE_SUCCESS.getMessage()));
 
-        User refreshedUser1 = userService.getById(createdUser1.getId());
-        User refreshedUser2 = userService.getById(createdUser2.getId());
+        User refreshedUser1 = userService.getRawById(createdUser1.getId());
+        User refreshedUser2 = userService.getRawById(createdUser2.getId());
 
         assertFalse(refreshedUser1.getFollowing().contains(refreshedUser2));
         assertFalse(refreshedUser2.getFollowers().contains(refreshedUser1));
@@ -229,8 +237,8 @@ public class UserFollowControllerTest {
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_TOKEN.getMessage()));
 
-        User refreshedUser1 = userService.getById(createdUser1.getId());
-        User refreshedUser2 = userService.getById(createdUser2.getId());
+        User refreshedUser1 = userService.getRawById(createdUser1.getId());
+        User refreshedUser2 = userService.getRawById(createdUser2.getId());
 
         assertTrue(refreshedUser1.getFollowing().contains(refreshedUser2));
         assertTrue(refreshedUser2.getFollowers().contains(refreshedUser1));
@@ -359,8 +367,8 @@ public class UserFollowControllerTest {
     public void createFollow(User user1, User user2) {
         userFollowService.follow(user1.getAccessToken(), user2.getId());
 
-        User refreshedUser1 = userService.getById(createdUser1.getId());
-        User refreshedUser2 = userService.getById(createdUser2.getId());
+        User refreshedUser1 = userService.getRawById(createdUser1.getId());
+        User refreshedUser2 = userService.getRawById(createdUser2.getId());
 
         assertTrue(refreshedUser1.getFollowing().contains(refreshedUser2));
         assertTrue(refreshedUser2.getFollowers().contains(refreshedUser1));

@@ -11,6 +11,7 @@ import com.yamiapp.model.dto.FoodResponseDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
 import com.yamiapp.repo.FoodRepository;
 import com.yamiapp.repo.RestaurantRepository;
+import com.yamiapp.util.ResponseFactory;
 import com.yamiapp.validator.FoodCreateValidator;
 import com.yamiapp.validator.FoodUpdateValidator;
 import com.yamiapp.validator.UserLoginRequestValidator;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.yamiapp.util.ServiceUtils.convertToJPEG;
@@ -151,7 +153,7 @@ public class FoodService {
     public void deleteFood(Integer id, String userToken, UserLoginDTO loginDTO) throws B2Exception {
         userLoginRequestValidator.validate(loginDTO);
         validateModeratorUser(userService, userToken);
-        String pwdToken = userService.getByPassword(loginDTO).getAccessToken();
+        String pwdToken = userService.getRawByPassword(loginDTO).getAccessToken();
         if (!pwdToken.equals(userToken)) {
             throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
         }
@@ -206,6 +208,10 @@ public class FoodService {
         } catch (Exception e) {
             throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
         }
+    }
+
+    public double getAverageRating(Long id) {
+        return foodRepository.getAverageRating(id);
     }
 
     public Resource getImageById(Integer id) throws B2Exception {

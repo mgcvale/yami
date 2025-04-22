@@ -1,7 +1,5 @@
 package com.yamiapp.controller;
 
-import com.yamiapp.exception.ErrorStrings;
-import com.yamiapp.exception.UnauthorizedException;
 import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.User;
 import com.yamiapp.model.dto.FoodReviewResponseDTO;
@@ -26,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final FoodReviewService foodReviewService;
 
     public UserController(UserService userService, FoodReviewService foodReviewService) {
@@ -36,26 +33,26 @@ public class UserController {
 
     @PostMapping("")
     public ResponseEntity<Object> createUser(@RequestBody UserDTO user) {
-        var u = userService.createUser(user);
-        return ResponseEntity.ok(new UserResponseDTO(u).withToken(u.getAccessToken()));
+        User u = userService.createRawUser(user);
+        return ResponseEntity.ok(new UserResponseDTO(u).withToken(u.getAccessToken()).withCounts(userService.getUserCounts(u.getId())));
     }
 
     @PostMapping("/login")
     public ResponseEntity<Object> loginUser(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader, @RequestBody(required = false) UserLoginDTO loginInfo) {
         if (authHeader == null) {
-            User u = userService.getByPassword(loginInfo);
-            return ResponseEntity.ok().body(new UserResponseDTO(u).withToken(u.getAccessToken()));
+            User u = userService.getRawByPassword(loginInfo);
+            return ResponseEntity.ok().body(new UserResponseDTO(u).withToken(u.getAccessToken()).withCounts(userService.getUserCounts(u.getId())));
         }
 
         String token = ControllerUtils.extractToken(authHeader);
-        return ResponseEntity.ok().body(new UserResponseDTO(userService.getByToken(token)).withToken(token));
+        UserResponseDTO user = userService.getByToken(token);
+        return ResponseEntity.ok().body(user.withCounts(userService.getUserCounts(user.getId())));
     }
 
-
     @PatchMapping("")
-    public ResponseEntity<Object> editUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestBody UserDTO user) {
+    public ResponseEntity<Object> editUser(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader, @RequestBody UserDTO user) {
         String token = ControllerUtils.extractToken(authHeader);
-        userService.updateUser(token, user);
+        userService.updateRawUser(token, user);
         return ResponseFactory.createSuccessResponse(MessageStrings.USER_EDIT_SUCCESS.getMessage());
     }
 
@@ -68,7 +65,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getUser(@PathVariable(value = "id") Long id) {
-        return ResponseEntity.ok().body(new UserResponseDTO(userService.getById(id)).withoutSensitiveData());
+        return ResponseEntity.ok().body(userService.getById(id).withoutSensitiveData().withCounts(userService.getUserCounts(id)));
     }
 
     @GetMapping("/{id}/reviews")

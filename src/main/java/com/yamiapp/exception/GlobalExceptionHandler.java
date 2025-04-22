@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -141,5 +142,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleInvalidToken(InvalidTokenException e) {
         logger.info("Handling InvalidTokenException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new UnauthorizedException(e.getMessage()), HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @ExceptionHandler(HttpMediaTypeException.class)
+    public ResponseEntity<Object> handleUnsupportedMediaType(HttpMediaTypeException e) {
+        logger.info("Handling HttpMediaTypeException: {}", e.getMessage());
+        return ResponseFactory.createErrorResponse(new UnsupportedMediaTypeException(e.getMessage()), HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
     }
 }

@@ -41,7 +41,7 @@ public class FoodReviewService {
     @Transactional
     public FoodReview createFoodReview(FoodReviewDTO dto, String token, Long foodId) {
         createValidator.validate(dto);
-        User user = userService.getByToken(token);
+        User user = userService.getRawByToken(token);
 
         Optional<Food> optFood = foodRepository.findById(Math.toIntExact(foodId));
         if (optFood.isEmpty()) {
@@ -63,7 +63,7 @@ public class FoodReviewService {
         // Validate update DTO
         updateValidator.validate(dto);
         // Validate token and get current user
-        User user = userService.getByToken(token);
+        User user = userService.getRawByToken(token);
 
         Optional<FoodReview> optReview = foodReviewRepository.findById(reviewId);
         if (optReview.isEmpty()) {
@@ -88,7 +88,7 @@ public class FoodReviewService {
 
     @Transactional
     public void deleteFoodReview(Long reviewId, String token) {
-        User user = userService.getByToken(token);
+        User user = userService.getRawByToken(token);
         Optional<FoodReview> optReview = foodReviewRepository.findById(reviewId);
         if (optReview.isEmpty()) {
             throw new NotFoundException(ErrorStrings.INVALID_FOOD_REVIEW_ID.getMessage());

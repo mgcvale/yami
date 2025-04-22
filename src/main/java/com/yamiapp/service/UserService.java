@@ -3,6 +3,7 @@ package com.yamiapp.service;
 import com.yamiapp.exception.*;
 import com.yamiapp.model.Role;
 import com.yamiapp.model.User;
+import com.yamiapp.model.dto.UserCountsDTO;
 import com.yamiapp.model.dto.UserDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
 import com.yamiapp.model.dto.UserResponseDTO;
@@ -25,17 +26,22 @@ import java.util.UUID;
 @Service
 public class UserService {
 
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder encoder;
+    private final UserCreateRequestValidator createValidator;
+    private final UserEditRequestValidator editValidator;
+    private final UserLoginRequestValidator loginValidator;
+
     @Autowired
-    private UserRepository userRepository;
-
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    private final UserCreateRequestValidator createValidator = new UserCreateRequestValidator();
-    private final UserEditRequestValidator editValidator = new UserEditRequestValidator();
-    private final UserLoginRequestValidator loginValidator = new UserLoginRequestValidator();
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    public User createUser(UserDTO dto) {
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+        this.encoder = new BCryptPasswordEncoder();
+        this.createValidator = new UserCreateRequestValidator();
+        this.editValidator = new UserEditRequestValidator();
+        this.loginValidator = new UserLoginRequestValidator();
+    }
+    
+    public User createRawUser(UserDTO dto) {
         // validate dto first
         createValidator.validate(dto);
 
@@ -54,7 +60,8 @@ public class UserService {
             return userRepository.save(u);
         } catch(DataIntegrityViolationException e) {
             if (e.getCause() instanceof ConstraintViolationException) {
-                if (e.getMessage().contains("username_unique"))
+                System.out.println("Constraint name: " + ((ConstraintViolationException) e.getCause()).getConstraintName());
+                if (((ConstraintViolationException) e.getCause()).getConstraintName().contains("username_unique"))
                     throw new ConflictException(ErrorStrings.CONFLICT_USERNAME.getMessage());
                 throw new ConflictException(ErrorStrings.CONFLICT_EMAIL.getMessage());
             }
@@ -63,10 +70,11 @@ public class UserService {
         }
     }
 
-    public User updateUser(User u, UserDTO dto) {
+    public User updateRawUser(User u, UserDTO dto) {
         editValidator.validate(dto);
 
         if (dto.getPassword() != null) {
+            System.out.println("Password is not null");
             u.setPasswordHash(encoder.encode(dto.getPassword()));
             u.setAccessToken(UUID.randomUUID().toString());
         }
@@ -76,8 +84,9 @@ public class UserService {
         if (dto.getEmail() != null) u.setEmail(dto.getEmail());
 
         try {
-            return userRepository.save(u);
-        } catch(DataIntegrityViolationException e) {
+            User newU = userRepository.save(u);
+            return newU;
+        } catch (DataIntegrityViolationException e) {
             if (e.getCause() instanceof ConstraintViolationException) {
                 if (e.getMessage().contains("username_unique"))
                     throw new ConflictException(ErrorStrings.CONFLICT_USERNAME.getMessage());
@@ -87,13 +96,13 @@ public class UserService {
         }
     }
 
-    public User updateUser(String accessToken, UserDTO dto) {
+    public User updateRawUser(String accessToken, UserDTO dto) {
         editValidator.validate(dto);
 
         try {
             Optional<User> optUser = userRepository.findByAccessToken(accessToken);
             if (optUser.isPresent()) {
-                return updateUser(optUser.get(), dto);
+                return updateRawUser(optUser.get(), dto);
             } else {
                 throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
             }
@@ -136,7 +145,7 @@ public class UserService {
         }
     }
 
-    public User getByToken(String accessToken) {
+    public User getRawByToken(String accessToken) {
         if (accessToken == null) {
             throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
         }
@@ -151,7 +160,12 @@ public class UserService {
             throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
         }
     }
-    public User getByPassword(UserLoginDTO loginInfo) {
+
+    public UserResponseDTO getByToken(String accessToken) {
+        return new UserResponseDTO(getRawByToken(accessToken));
+    }
+
+    public User getRawByPassword(UserLoginDTO loginInfo) {
         loginValidator.validate(loginInfo);
 
         try {
@@ -169,7 +183,11 @@ public class UserService {
         }
     }
 
-    public User getById(Long id) {
+    public UserResponseDTO getByPassword(UserLoginDTO loginDTO) {
+        return new UserResponseDTO(getRawByPassword(loginDTO));
+    }
+
+    public User getRawById(Long id) {
         try {
             Optional<User> optUser = userRepository.findById(id);
             if (optUser.isPresent()) {
@@ -180,10 +198,22 @@ public class UserService {
         } catch (EntityNotFoundException e) {
             throw new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage());
         } catch (NotFoundException e) {
-            throw new NotFoundException(e.getMessage());
+            throw e;
         } catch (Exception e) {
             throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
         }
+    }
+
+    public UserCountsDTO getUserCounts(Long userId) {
+        try {
+            return userRepository.getUserCounts(userId);
+        } catch (Exception e) {
+            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
+        }
+    }
+
+    public UserResponseDTO getById(Long id) {
+        return new UserResponseDTO(getRawById(id));
     }
 
     public boolean userExists(Long userId) {

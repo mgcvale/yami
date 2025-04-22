@@ -3,14 +3,17 @@ package com.yamiapp.util;
 import org.springframework.http.ResponseEntity;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ResponseFactory {
 
     public static class JsonResponseChain {
-        private HashMap<String, Object> json;
+        private Map<String, Object> json;
 
-         JsonResponseChain() {}
+        public JsonResponseChain() {
+            json = new LinkedHashMap<>();
+        }
 
         public JsonResponseChain add(String key, Object value) {
             json.put(key, value);
@@ -53,7 +56,6 @@ public class ResponseFactory {
     public static ResponseEntity<Object> createSuccessResponse() {
         return createSuccessResponse(200);
     }
-
 
     public static JsonResponseChain createJsonResponse() {
         return new JsonResponseChain();

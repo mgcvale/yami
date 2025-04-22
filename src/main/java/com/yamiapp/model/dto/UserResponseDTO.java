@@ -7,28 +7,39 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserResponseDTO {
-    private long id;
+    private Long id;
     private String username;
     private String bio;
     private String location;
     private String email;
     private String accessToken;
+    private Long reviewCount;
+    private Long followerCount;
+    private Long followingCount;
 
-    public UserResponseDTO(User u) {
-        this.id = u.getId();
-        this.username = u.getUsername();
-        this.bio = u.getBio();
-        this.location = u.getLocation();
-        this.email = u.getEmail();
+    public UserResponseDTO(User user) {
+        this.id = user.getId();
+        this.username = user.getUsername();
+        this.bio = user.getBio();
+        this.location = user.getLocation();
+        this.email = user.getEmail();
     }
 
-    public UserResponseDTO withToken(String accessToken) {
-        this.accessToken = accessToken;
+    public UserResponseDTO withCounts(UserCountsDTO userCounts) {
+        this.reviewCount = userCounts.getReviewCount();
+        this.followerCount = userCounts.getFollowerCount();
+        this.followingCount = userCounts.getFollowingCount();
+        return this;
+    }
+
+    public UserResponseDTO withToken(String token) {
+        this.accessToken = token;
         return this;
     }
 
     public UserResponseDTO withoutSensitiveData() {
         this.email = null;
+        this.accessToken = null;
         return this;
     }
 }

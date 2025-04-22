@@ -7,6 +7,7 @@ import com.yamiapp.model.User;
 import com.yamiapp.model.dto.UserDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
 import com.yamiapp.repo.UserRepository;
+import com.yamiapp.service.UserService;
 import com.yamiapp.util.MessageStrings;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.AfterEach;
@@ -29,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Transactional
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
@@ -48,6 +48,8 @@ public class UserControllerTest {
     private final UserDTO defaultUser = new UserDTO("testuser", "password123", "bio", "location", "test@example.com");
     private final UserDTO differentUser = new UserDTO("differentuser", "differentpassword", "differentbio", "differentlocation", "diferentemail@example.com");
     private User createdUser;
+    @Autowired
+    private UserService userService;
 
     @BeforeAll
     public static void initialize() {
@@ -70,7 +72,10 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.username").value(defaultUser.getUsername()))
                 .andExpect(jsonPath("$.email").value(defaultUser.getEmail()))
                 .andExpect(jsonPath("$.accessToken").exists())
-                .andExpect(jsonPath("$.id").exists());
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.followerCount").value(0))
+                .andExpect(jsonPath("$.followingCount").value(0))
+                .andExpect(jsonPath("$.reviewCount").value(0));
 
         Optional<User> savedUser = userRepository.findByUsername(defaultUser.getUsername());
         assertTrue(savedUser.isPresent());
@@ -91,7 +96,7 @@ public class UserControllerTest {
 
     @Test
     public void testCreateUserUsernameConflict() throws Exception {
-        String differentemail = "differentemail@email.com";
+        String differentemail = "differentemail123@email.com";
         UserDTO user2 = defaultUser.copy().withEmail(differentemail);
         String json2 = objectMapper.writeValueAsString(user2);
 
@@ -123,12 +128,11 @@ public class UserControllerTest {
         List<User> users = userRepository.findAll();
         assertEquals(1, users.size());
         assertNotEquals(users.getFirst().getEmail(), differentUsername);
-
     }
 
     @Test
     public void testCreateUserWithoutFieldsError() throws Exception {
-        UserDTO invalidUser = differentUser.copy().withLocation(null);
+        UserDTO invalidUser = differentUser.copy().withUsername(null);
 
         mockMvc.perform(post("/user")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -691,6 +695,8 @@ public class UserControllerTest {
     @Test
     public void testUpdateUserHashAndTokenWithValidTokenAfterPasswordEdit() throws Exception {
         UserDTO editedData = defaultUser.copy().withPassword("DifferentPassword");
+        String oldHash = createdUser.getPasswordHash();
+        String oldToken = createdUser.getAccessToken();
 
         mockMvc.perform(patch("/user")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdUser.getAccessToken())
@@ -704,8 +710,8 @@ public class UserControllerTest {
         assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited");
         User user = opt.get();
 
-        assertNotEquals(user.getPasswordHash(), createdUser.getPasswordHash());
-        assertNotEquals(user.getAccessToken(), createdUser.getAccessToken());
+        assertNotEquals(user.getPasswordHash(), oldHash);
+        assertNotEquals(user.getAccessToken(), oldToken);
 
         // the new password should continue to work
         UserLoginDTO loginInfo = new UserLoginDTO(editedData.getUsername(), editedData.getPassword());

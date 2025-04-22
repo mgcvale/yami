@@ -1,6 +1,7 @@
 package com.yamiapp.repo;
 
 import com.yamiapp.model.User;
+import com.yamiapp.model.dto.UserCountsDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,10 +20,13 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("select u from User u where u.id = :id")
     Optional<User> findById(@Param("id") Long id);
+
+
+    @Query(value = """
+        SELECT\s
+            (SELECT COUNT(*) FROM follows WHERE following_id = :userId) as followerCount,
+            (SELECT COUNT(*) FROM follows WHERE follower_id = :userId) as followingCount,
+            (SELECT COUNT(*) FROM food_reviews WHERE user_id = :userId) as reviewCount
+       \s""", nativeQuery = true)
+    UserCountsDTO getUserCounts(@Param("userId") Long userId);
 }
-
-/*
-
-ele vai procurar o usuario primeiro. Aí, ele vai procurar
-
- */

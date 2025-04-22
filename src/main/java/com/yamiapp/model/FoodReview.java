@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(
-        name = "food_review",
+        name = "food_reviews",
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "food_id"})
 )
 public class FoodReview {

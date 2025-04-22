@@ -32,8 +32,8 @@ public class UserFollowService {
 
     @Transactional
     public void follow(String followerToken, Long followedId) {
-        User follower = userService.getByToken(followerToken);
-        User followed = userService.getById(followedId);
+        User follower = userService.getRawByToken(followerToken);
+        User followed = userService.getRawById(followedId);
 
         if (followed.getId().equals(follower.getId())) {
             throw new BadRequestException(ErrorStrings.CANNOT_FOLLOW_ONESELF.getMessage());
@@ -47,8 +47,8 @@ public class UserFollowService {
     }
 
     public void unfollow(String unfollowerToken, Long unfollowedId) {
-        User unfollower = userService.getByToken(unfollowerToken);
-        User unfollowed = userService.getById(unfollowedId);
+        User unfollower = userService.getRawByToken(unfollowerToken);
+        User unfollowed = userService.getRawById(unfollowedId);
 
         unfollower.getFollowing().remove(unfollowed);
         unfollowed.getFollowers().remove(unfollower);
@@ -58,7 +58,7 @@ public class UserFollowService {
     }
 
     public Set<UserResponseDTO> getFollowers(Long userId) {
-        User user = userService.getById(userId);
+        User user = userService.getRawById(userId);
         Set<User> followers = user.getFollowers();
 
         Set<UserResponseDTO> followersMapped = followers.stream().map(u -> new UserResponseDTO(u).withoutSensitiveData()).collect(Collectors.toSet());
@@ -66,7 +66,7 @@ public class UserFollowService {
     }
 
     public Set<UserResponseDTO> getFollowing(Long userId) {
-        User user = userService.getById(userId);
+        User user = userService.getRawById(userId);
         Set<User> following = user.getFollowing();
 
         Set<UserResponseDTO> followingMapped = following.stream().map(u -> new UserResponseDTO(u).withoutSensitiveData()).collect(Collectors.toSet());
@@ -74,8 +74,10 @@ public class UserFollowService {
     }
 
     public boolean isFollowing(Long followerId, Long followedId) {
-        User follower = userService.getById(followerId);
-        User followed = userService.getById(followedId);
+        User follower = userService.getRawById(followerId);
+        User followed = userService.getRawById(followedId);
         return follower.getFollowing().contains(followed);
     }
+
+
 }

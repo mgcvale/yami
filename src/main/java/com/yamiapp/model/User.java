@@ -9,7 +9,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_users_username", columnNames = "username"),
+        @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
+        @UniqueConstraint(name = "uk_users_access_token", columnNames = "access_token")
+})
 @Getter
 @Setter
 public class User {
@@ -18,22 +22,22 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false, name = "username", unique = true)
+    @Column(nullable = false, name = "username")
     private String username;
 
     @Column(nullable = true, name = "bio", length = 128)
     private String bio;
 
-    @Column(nullable = true, name = "location")
+    @Column(nullable = true, name = "location", length=128)
     private String location;
 
     @Column(nullable = false, name = "password_hash")
     private String passwordHash;
 
-    @Column(nullable = false, name = "access_token", unique = true)
+    @Column(nullable = false, name = "access_token")
     private String accessToken;
 
-    @Column(nullable = false, name = "email", unique = true)
+    @Column(nullable = false, name = "email")
     private String email;
 
     @JsonIgnore
@@ -41,15 +45,15 @@ public class User {
     private Role role;
 
     // FKs
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "follow",
+            name = "follows",
             joinColumns = @JoinColumn(name = "follower_id"),
             inverseJoinColumns = @JoinColumn(name = "following_id")
     )
     private Set<User> following = new HashSet<>();
 
-    @ManyToMany(mappedBy = "following")
+    @ManyToMany(mappedBy = "following", fetch = FetchType.LAZY)
     private Set<User> followers = new HashSet<>();
 
     public User(Long id, String username, String bio, String location, String passwordHash, String accessToken, String email, Set<User> following, Set<User> followers) {
