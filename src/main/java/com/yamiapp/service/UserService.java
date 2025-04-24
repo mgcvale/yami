@@ -3,10 +3,7 @@ package com.yamiapp.service;
 import com.yamiapp.exception.*;
 import com.yamiapp.model.Role;
 import com.yamiapp.model.User;
-import com.yamiapp.model.dto.UserCountsDTO;
-import com.yamiapp.model.dto.UserDTO;
-import com.yamiapp.model.dto.UserLoginDTO;
-import com.yamiapp.model.dto.UserResponseDTO;
+import com.yamiapp.model.dto.*;
 import com.yamiapp.repo.UserRepository;
 import com.yamiapp.validator.UserCreateRequestValidator;
 import com.yamiapp.validator.UserEditRequestValidator;
@@ -20,8 +17,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class UserService {
@@ -40,7 +38,7 @@ public class UserService {
         this.editValidator = new UserEditRequestValidator();
         this.loginValidator = new UserLoginRequestValidator();
     }
-    
+
     public User createRawUser(UserDTO dto) {
         // validate dto first
         createValidator.validate(dto);
@@ -212,12 +210,45 @@ public class UserService {
         }
     }
 
+    public UserStats getUserStats(Long userId) {
+        if (!userExists(userId)) {
+            throw new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage());
+        }
+
+        try {
+            List<RatingDistributionEntry> ratingDistributionEntries = userRepository.getRatingDistribution(userId);
+            System.out.println("DISTRIBUTION: " + ratingDistributionEntries);
+            Double avgRating = userRepository.getAverageRating(userId);
+            avgRating = (avgRating == null) ? 0D : avgRating;
+
+            Map<Integer, Long> ratingMap = IntStream.rangeClosed(0, 20)
+                    .boxed()
+                    .collect(Collectors.toMap(
+                            key -> key,
+                            key -> 0L
+                    ));
+
+            ratingDistributionEntries.forEach(entry -> {
+                if (entry.key() != null && entry.value() != null) {
+                    ratingMap.put(entry.key(), entry.value());
+                }
+            });
+
+            return new UserStats(
+                    avgRating,
+                    ratingMap
+            );
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     public UserResponseDTO getById(Long id) {
         return new UserResponseDTO(getRawById(id));
     }
 
     public boolean userExists(Long userId) {
-        return userRepository.existsById(Math.toIntExact(userId));
+        return userRepository.existsById(userId);
     }
 
 }

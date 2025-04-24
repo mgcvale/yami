@@ -6,7 +6,6 @@ import com.yamiapp.exception.ErrorStrings;
 import com.yamiapp.mock.FakeBackblazeService;
 import com.yamiapp.model.*;
 import com.yamiapp.model.dto.FoodDTO;
-import com.yamiapp.model.dto.FoodResponseDTO;
 import com.yamiapp.model.dto.FoodReviewDTO;
 import com.yamiapp.model.dto.UserDTO;
 import com.yamiapp.repo.FoodRepository;
@@ -31,12 +30,20 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.IntSupplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -654,14 +661,41 @@ public class FoodReviewControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    public void foodReviewCreationUpdatesUserStats() throws Exception {
+        List<Integer> reviews = List.of(1, 2, 3, 3, 3, 6, 12, 14, 19, 20);
+        Map<Integer, Long> freq = IntStream.rangeClosed(0, 20).boxed()
+                .collect(Collectors.toMap(
+                        i -> i,
+                        i -> reviews.stream().filter(x -> x == i).count()
+                ));
+
+        createFoodReviewBatchFromOneUser(createdRegularUser, reviews);
+
+
+        ResultActions matcher = mockMvc.perform(get("/user/" + createdRegularUser.getId() + "/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.averageRating").value(reviews.stream().mapToInt(Integer::intValue).average().orElse(0)))
+                .andExpect(jsonPath("$.ratingDistribution").isMap());
+
+        for (int i = 0; i < 20; i++) {
+            Long thisFreq = freq.get(i);
+            matcher = matcher.andExpect(jsonPath("$.ratingDistribution." + i).value(thisFreq));
+        }
+    }
 
     public FoodReview createDefaultFoodReview(User u) throws Exception {
         return createDefaultFoodReview(u, foodReviewDTO.getReview());
     }
 
-    public void createFoodReviewBatchFromOneUser(User u, int count) throws Exception {
 
-        for (int i = 0; i < count; i++) {
+    public void createFoodReviewBatchFromOneUser(User u, int count) throws Exception {
+        createFoodReviewBatchFromOneUser(u, Collections.nCopies(count, 20));
+    }
+
+    public void createFoodReviewBatchFromOneUser(User u, List<Integer> ratings) throws Exception {
+
+        for (int i = 0; i < ratings.size(); i++) {
             // we need to create a new food for each review
             FoodDTO foodDTO = FoodDTO.builder()
                             .name("cool food " + i + u.getId())
@@ -682,11 +716,11 @@ public class FoodReviewControllerTest {
             // now we create the review for that food
             mockMvc.perform(post("/food/review/" + foodId)
                             .contentType(ContentType.APPLICATION_JSON.getMimeType())
-                            .content(objectMapper.writeValueAsString(foodReviewDTO))
+                            .content(objectMapper.writeValueAsString(foodReviewDTO.withRating(ratings.get(i))))
                             .header("Authorization", "Bearer " + u.getAccessToken()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.review").value(foodReviewDTO.getReview()))
-                    .andExpect(jsonPath("$.rating").value(foodReviewDTO.getRating()))
+                    .andExpect(jsonPath("$.rating").value(ratings.get(i)))
                     .andExpect(jsonPath("$.foodId").value(foodId))
                     .andExpect(jsonPath("$.foodName").value(foodDTO.getName()))
                     .andExpect(jsonPath("$.userId").value(u.getId()))

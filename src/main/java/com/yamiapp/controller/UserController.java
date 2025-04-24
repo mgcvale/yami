@@ -2,10 +2,7 @@ package com.yamiapp.controller;
 
 import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.User;
-import com.yamiapp.model.dto.FoodReviewResponseDTO;
-import com.yamiapp.model.dto.UserDTO;
-import com.yamiapp.model.dto.UserLoginDTO;
-import com.yamiapp.model.dto.UserResponseDTO;
+import com.yamiapp.model.dto.*;
 import com.yamiapp.service.FoodReviewService;
 import com.yamiapp.service.UserService;
 import com.yamiapp.util.ControllerUtils;
@@ -78,6 +75,12 @@ public class UserController {
         Page<FoodReview> foodReviews = foodReviewService.getFoodReviewsByUser(id, "", keyword, Pageable.ofSize(count).withPage(offset));
         Page<FoodReviewResponseDTO> responseReviews = foodReviews.map(FoodReviewResponseDTO::new);
         return ResponseEntity.ok().body(responseReviews);
+    }
+
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<Object> getUserStats(@PathVariable Long id) {
+        System.out.println("\n\n\n\n\n\n----RESPONSE----\n" + userService.getUserStats(id).averageRating() + "\n" + userService.getUserStats(id).ratingDistribution());
+        return ResponseEntity.ok().body(userService.getUserStats(id));
     }
 
 }

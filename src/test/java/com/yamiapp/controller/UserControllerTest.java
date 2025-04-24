@@ -792,4 +792,26 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.role").doesNotExist());
     }
 
+
+    // stats
+    @Test
+    public void testGetUserStats() throws Exception {
+        mockMvc.perform(get("/user/" + createdUser.getId() + "/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.averageRating").isNumber())
+                .andExpect(jsonPath("$.ratingDistribution").isMap());
+
+        for (int i = 0; i <= 20; i++) {
+            mockMvc.perform(get("/user/" + createdUser.getId() + "/stats"))
+                    .andExpect(jsonPath(("$.ratingDistribution." + i)).value(0));
+        }
+    }
+
+    @Test
+    public void testGetUserStatsFromNonexistentUser() throws Exception {
+        mockMvc.perform(get("/user/999999/stats"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USER_ID.getMessage()));
+    }
+
 }
