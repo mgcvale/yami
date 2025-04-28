@@ -83,7 +83,6 @@ public class UserControllerTest {
     }
 
 
-
     // USER CREATION
     @Test
     public void testCreateUserSuccess() throws Exception {
