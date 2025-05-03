@@ -74,9 +74,11 @@ public class UserFollowService {
     }
 
     public boolean isFollowing(Long followerId, Long followedId) {
-        User follower = userService.getRawById(followerId);
-        User followed = userService.getRawById(followedId);
-        return follower.getFollowing().contains(followed);
+        return userFollowRepository.existsFollowingByUserIdAndTargetId(followerId, followedId);
+    }
+
+    public boolean isFollowingByToken(String followerToken, Long followedId) {
+        return userFollowRepository.existsFollowingByAccessTokenAndTargetId(followerToken, followedId);
     }
 
 

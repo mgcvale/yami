@@ -17,4 +17,14 @@ public interface UserFollowRepository extends JpaRepository<User, Long> {
 
     @Query("select count(u.following) from User u where u.id=:userId")
     Long countFollowingById(Long userId);
+
+    @Query("select case when count(f) > 0 then true else false end " +
+            "from User u join u.following f " +
+            "where u.accessToken = :accessToken and f.id = :targetId")
+    boolean existsFollowingByAccessTokenAndTargetId(String accessToken, Long targetId);
+
+    @Query("select case when count(f) > 0 then true else false end " +
+            "from User u join u.following f " +
+            "where u.id = :followerId and f.id = :targetId")
+    boolean existsFollowingByUserIdAndTargetId(Long followerId, Long targetId);
 }

@@ -356,12 +356,22 @@ public class UserFollowControllerTest {
                 .andExpect(jsonPath("$.following").value(false));
     }
 
+    @Transactional
     @Test
     public void isFollowingNonExistentUserError() throws  Exception {
-        mockMvc.perform(get("/user/follow/123/following/124"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USER_ID.getMessage()));
+        mockMvc.perform(get("/user/follow/123/following/67656"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.following").value(false));
+    }
+
+    @Transactional
+    @Test
+    public void getUserAfterFollowUpdatesFollowingState() throws Exception {
+        createFollow(createdUser1, createdUser2);
+        mockMvc.perform(get("/user/" + createdUser2.getId())
+                .header("Authorization", "Bearer "+ createdUser1.getAccessToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.following").value(true));
     }
 
     public void createFollow(User user1, User user2) {

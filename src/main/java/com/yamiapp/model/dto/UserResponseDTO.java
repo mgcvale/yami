@@ -16,6 +16,7 @@ public class UserResponseDTO {
     private Long reviewCount;
     private Long followerCount;
     private Long followingCount;
+    private boolean following;
 
     public UserResponseDTO(User user) {
         this.id = user.getId();
@@ -23,6 +24,7 @@ public class UserResponseDTO {
         this.bio = user.getBio();
         this.location = user.getLocation();
         this.email = user.getEmail();
+        this.following = false;
     }
 
     public UserResponseDTO withCounts(UserCountsDTO userCounts) {
@@ -40,6 +42,11 @@ public class UserResponseDTO {
     public UserResponseDTO withoutSensitiveData() {
         this.email = null;
         this.accessToken = null;
+        return this;
+    }
+
+    public UserResponseDTO withFollowing(boolean following) {
+        this.following = following;
         return this;
     }
 }

@@ -75,7 +75,8 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.followerCount").value(0))
                 .andExpect(jsonPath("$.followingCount").value(0))
-                .andExpect(jsonPath("$.reviewCount").value(0));
+                .andExpect(jsonPath("$.reviewCount").value(0))
+                .andExpect(jsonPath("$.following").value(false));
 
         Optional<User> savedUser = userRepository.findByUsername(defaultUser.getUsername());
         assertTrue(savedUser.isPresent());
@@ -758,7 +759,31 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.email").doesNotExist())
                 .andExpect(jsonPath("$.accessToken").doesNotExist())
                 .andExpect(jsonPath("$.passwordHash").doesNotExist())
-                .andExpect(jsonPath("$.role").doesNotExist());
+                .andExpect(jsonPath("$.role").doesNotExist())
+                .andExpect(jsonPath("$.following").value(false));
+    }
+
+    @Test
+    public void testGetUserByIdWithToken() throws Exception {
+        mockMvc.perform(get("/user/" + createdUser.getId())
+                        .header("Authorization", "Bearer " + createdUser.getAccessToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value(createdUser.getUsername()))
+                .andExpect(jsonPath("$.bio").value(createdUser.getBio()))
+                .andExpect(jsonPath("$.location").value(createdUser.getLocation()))
+                .andExpect(jsonPath("$.email").doesNotExist())
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.passwordHash").doesNotExist())
+                .andExpect(jsonPath("$.role").doesNotExist())
+                .andExpect(jsonPath("$.following").value(false));
+    }
+
+    @Test
+    public void testGetUserByIdWithInvalidToken() throws Exception {
+        mockMvc.perform(get("/user/" + createdUser.getId())
+                        .header("Authorization", "Bearer alskjdsalkj"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.following").value(false));
     }
 
     @Test
@@ -790,7 +815,6 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.passwordHash").doesNotExist())
                 .andExpect(jsonPath("$.role").doesNotExist());
     }
-
 
     // stats
     @Test

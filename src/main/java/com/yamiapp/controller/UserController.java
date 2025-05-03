@@ -4,6 +4,7 @@ import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.User;
 import com.yamiapp.model.dto.*;
 import com.yamiapp.service.FoodReviewService;
+import com.yamiapp.service.UserFollowService;
 import com.yamiapp.service.UserService;
 import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
@@ -22,10 +23,12 @@ public class UserController {
 
     private final UserService userService;
     private final FoodReviewService foodReviewService;
+    private final UserFollowService userFollowService;
 
-    public UserController(UserService userService, FoodReviewService foodReviewService) {
+    public UserController(UserService userService, FoodReviewService foodReviewService, UserFollowService userFollowService) {
         this.userService = userService;
         this.foodReviewService = foodReviewService;
+        this.userFollowService = userFollowService;
     }
 
     @PostMapping("")
@@ -61,8 +64,11 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getUser(@PathVariable(value = "id") Long id) {
-        return ResponseEntity.ok().body(userService.getById(id).withoutSensitiveData().withCounts(userService.getUserCounts(id)));
+    public ResponseEntity<Object> getUser(@PathVariable(value = "id") Long id, @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        if (authHeader == null) return ResponseEntity.ok().body(userService.getById(id).withoutSensitiveData().withCounts(userService.getUserCounts(id)));
+
+        String token = ControllerUtils.extractToken(authHeader);
+        return ResponseEntity.ok().body(userService.getById(id).withoutSensitiveData().withCounts(userService.getUserCounts(id)).withFollowing(userFollowService.isFollowingByToken(token, id)));
     }
 
     @GetMapping("/{id}/reviews")
