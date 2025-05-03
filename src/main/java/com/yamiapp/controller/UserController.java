@@ -46,7 +46,7 @@ public class UserController {
 
         String token = ControllerUtils.extractToken(authHeader);
         UserResponseDTO user = userService.getByToken(token);
-        return ResponseEntity.ok().body(user.withCounts(userService.getUserCounts(user.getId())));
+        return ResponseEntity.ok().body(user.withCounts(userService.getUserCounts(user.getId())).withToken(token));
     }
 
     @PatchMapping("")

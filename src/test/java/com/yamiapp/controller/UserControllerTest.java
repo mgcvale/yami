@@ -344,7 +344,8 @@ public class UserControllerTest {
         mockMvc.perform(post("/user/login")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value(createdUser.getUsername()));
+                .andExpect(jsonPath("$.username").value(createdUser.getUsername()))
+                .andExpect(jsonPath("$.accessToken").value(createdUser.getAccessToken()));
     }
 
     @Test
