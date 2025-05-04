@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -108,6 +107,7 @@ public class RestaurantControllerTest {
                         .file(photoFile)
                         .param("name", "Test Restaurant")
                         .param("description", "A test restaurant description")
+                        .param("shortName", "Restaurant")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
@@ -133,6 +133,7 @@ public class RestaurantControllerTest {
                         .file(photoFile)
                         .param("name", "Test Restaurant")
                         .param("description", "A test restaurant description")
+                        .param("shortName", "Restaurant")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdModeratorUser.getAccessToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
@@ -155,6 +156,7 @@ public class RestaurantControllerTest {
                         .file(photoFile)
                         .param("name", "Test Restaurant")
                         .param("description", "A test restaurant description")
+                        .param("shortName", "Restaurant")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdRegularUser.getAccessToken()))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status").value("error"))
@@ -179,7 +181,8 @@ public class RestaurantControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photoFile)
                         .param("name", "Test Restaurant")
-                        .param("description", "A test restaurant description")
+                        .param("description", "A test restaurant description")                        .param("shortName", "Restaurant")
+                        .param("shortName", "Restaurant")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer invalidtoken123"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("error"))
@@ -200,6 +203,7 @@ public class RestaurantControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photoFile)
+                        .param("shortName", "Restaurant")
                         .param("name", "Test Restaurant")
                         .param("description", "A test restaurant description"))
                 .andExpect(status().isUnauthorized())
@@ -223,6 +227,7 @@ public class RestaurantControllerTest {
         final String name = "duplicate";
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photoFile)
+                        .param("shortName", "Restaurant")
                         .param("name", name)
                         .param("description", "First restaurant")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
@@ -231,6 +236,7 @@ public class RestaurantControllerTest {
         // Try to create second restaurant with same name
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photoFile)
+                        .param("shortName", "Restaurant")
                         .param("name", name)
                         .param("description", "Second restaurant with same name")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
@@ -254,6 +260,7 @@ public class RestaurantControllerTest {
         // Missing name
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photoFile)
+                        .param("shortName", "Restaurant")
                         .param("description", "A test restaurant description")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
                 .andExpect(status().isBadRequest());
@@ -261,6 +268,7 @@ public class RestaurantControllerTest {
         // Missing description
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photoFile)
+                        .param("shortName", "Restaurant")
                         .param("name", "Test Restaurant")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
                 .andExpect(status().isBadRequest());
@@ -268,7 +276,16 @@ public class RestaurantControllerTest {
         // Missing photo
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .param("name", "Test Restaurant")
+                        .param("shortName", "Restaurant")
                         .param("description", "A test restaurant description")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
+                .andExpect(status().isBadRequest());
+
+        // Missing shortName
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
+                        .file(photoFile)
+                        .param("description", "Restaurant")
+                        .param("name", "Test Restaurant")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
                 .andExpect(status().isBadRequest());
 
@@ -287,6 +304,7 @@ public class RestaurantControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photoFile)
+                        .param("shortName", "Restaurant")
                         .param("name", "do")
                         .param("Description", "Regular and valid description")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
@@ -309,6 +327,7 @@ public class RestaurantControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photo)
+                        .param("shortName", "Restaurant")
                         .param("name", "Test Restaurant")
                         .param("description", "A test restaurant description")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
@@ -647,6 +666,7 @@ public class RestaurantControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(photoFile)
+                        .param("shortName", "Restaurant")
                         .param("name", "Test Restaurant")
                         .param("description", "A test restaurant description")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))

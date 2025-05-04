@@ -56,6 +56,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InternalServerException.class)
     public ResponseEntity<Object> handleInternalServer(InternalServerException e) {
+        e.printStackTrace();
         logger.info("Handling InternalServerException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR.value());
     }

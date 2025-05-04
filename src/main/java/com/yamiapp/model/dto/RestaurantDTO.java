@@ -11,13 +11,15 @@ import org.springframework.web.multipart.MultipartFile;
 public class RestaurantDTO {
 
     private String name;
+    private String shortName;
     private MultipartFile photo;
     private String description;
 
-    public RestaurantDTO(String name, MultipartFile photo, String description) {
+    public RestaurantDTO(String name, String shortName, MultipartFile photo, String description) {
         this.name = name;
         this.photo = photo;
         this.description = description;
+        this.shortName = shortName;
     }
 
 }

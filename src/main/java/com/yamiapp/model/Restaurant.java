@@ -21,6 +21,10 @@ public class Restaurant {
     private String name;
 
     @Setter
+    @Column(nullable = false, name="short_name", unique = false)
+    private String shortName;
+
+    @Setter
     @Column(nullable = true, name = "photo")
     private String photoPath;
 

@@ -9,9 +9,10 @@ import lombok.Setter;
 public class RestaurantResposneDTO {
     private Long id;
     private String name;
+    private String shortName;
     private String description;
 
-    public RestaurantResposneDTO(Long id, String name, String description) {
+    public RestaurantResposneDTO(Long id, String name, String shortName, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -21,5 +22,6 @@ public class RestaurantResposneDTO {
         this.id = r.getId();
         this.name = r.getName();
         this.description = r.getDescription();
+        this.shortName = r.getShortName();
     }
 }

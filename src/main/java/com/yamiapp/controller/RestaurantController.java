@@ -31,10 +31,11 @@ public class RestaurantController {
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "photo", required = false) MultipartFile photo) throws B2Exception {
+            @RequestParam(value = "photo", required = false) MultipartFile photo,
+            @RequestParam(value = "shortName", required = true) String shortName) throws B2Exception {
         String token = ControllerUtils.extractToken(authHeader);
 
-        RestaurantDTO dto = new RestaurantDTO(name, photo, description);
+        RestaurantDTO dto = new RestaurantDTO(name, shortName, photo, description);
         restaurantService.createRestaurant(dto, token);
 
         return ResponseFactory.createSuccessResponse(MessageStrings.RESTAURANT_CREATE_SUCCESS.getMessage());
@@ -46,10 +47,11 @@ public class RestaurantController {
             @PathVariable Integer id,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "shortName", required = false) String shortName,
             @RequestParam(value = "photo", required = false) MultipartFile photo) throws B2Exception {
         String token = ControllerUtils.extractToken(authHeader);
 
-        RestaurantDTO dto = RestaurantDTO.builder().name(name).description(description).photo(photo).build();
+        RestaurantDTO dto = RestaurantDTO.builder().name(name).description(description).photo(photo).shortName(shortName).build();
         restaurantService.updateRestaurant(id, dto, token);
 
         return ResponseFactory.createSuccessResponse(MessageStrings.RESTAURANT_UPDATE_SUCCESS.getMessage());

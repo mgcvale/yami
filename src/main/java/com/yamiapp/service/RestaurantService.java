@@ -62,6 +62,7 @@ public class RestaurantService {
         Restaurant r = new Restaurant();
         r.setName(dto.getName());
         r.setDescription(dto.getDescription());
+        r.setShortName(dto.getShortName());
 
         try {
             r = restaurantRepository.save(r);
@@ -69,6 +70,7 @@ public class RestaurantService {
             if (e.getCause() instanceof ConstraintViolationException) {
                 throw new ConflictException(ErrorStrings.CONFLICT_RESTAURANT_NAME.getMessage());
             }
+            System.out.println(e.getMessage());
             throw new InternalServerException(ErrorStrings.INTEGRITY.getMessage());
         }
 
@@ -113,6 +115,7 @@ public class RestaurantService {
 
         if (dto.getName() != null) r.setName(dto.getName());
         if (dto.getDescription() != null) r.setDescription(dto.getDescription());
+        if (dto.getShortName() != null) r.setShortName(dto.getShortName());
         if (dto.getPhoto() != null) {
             String photoName = r.getId().toString() + "/" + "picture.jpg";
             r.setPhotoPath(photoName);

@@ -107,6 +107,7 @@ public class FoodControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
                         .file(restaurantPhoto)
                         .param("name", "RestaurantName")
+                        .param("shortName", "Restaurant")
                         .param("description", "RestaurantDescription")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
                 .andExpect(status().isOk());
