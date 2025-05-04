@@ -21,7 +21,7 @@ public class Restaurant {
     private String name;
 
     @Setter
-    @Column(nullable = false, name="short_name", unique = false)
+    @Column(nullable = true, name="short_name", unique = false)
     private String shortName;
 
     @Setter

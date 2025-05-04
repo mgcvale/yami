@@ -19,6 +19,7 @@ public class FoodReviewResponseDTO {
 
     private Long restaurantId;
     private String restaurantName;
+    private String restaurantShortName;
 
     public FoodReviewResponseDTO(FoodReview foodReview) {
         this.id = foodReview.getId();
@@ -30,5 +31,6 @@ public class FoodReviewResponseDTO {
         this.foodName = foodReview.getFood().getName();
         this.restaurantId = foodReview.getFood().getRestaurant().getId();
         this.restaurantName = foodReview.getFood().getRestaurant().getName();
+        this.restaurantShortName = foodReview.getFood().getRestaurant().getShortName();
     }
 }
