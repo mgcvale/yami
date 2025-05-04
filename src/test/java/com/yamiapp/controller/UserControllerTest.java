@@ -684,7 +684,7 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value(defaultUser.getUsername()))
                 .andExpect(jsonPath("$.email").value(editedData.getEmail()))
-                .andExpect(jsonPath("$.accessToken").exists());
+                .andExpect(jsonPath("$.accessToken").exists());2
 
         Optional<User> opt = userRepository.findById(createdUser.getId());
         assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited");

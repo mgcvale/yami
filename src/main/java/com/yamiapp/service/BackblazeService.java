@@ -38,9 +38,6 @@ public class BackblazeService {
 
     @PostConstruct
     public void initialize() {
-        System.out.println(applicationKey);
-        System.out.println(applicationKeyId);
-
         client = B2StorageClientFactory.createDefaultFactory().create(
                 applicationKeyId,
                 applicationKey,
