@@ -639,8 +639,9 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(editedData)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.USER_EDIT_SUCCESS.getMessage()));
+                .andExpect(jsonPath("$.username").value(editedData.getUsername()))
+                .andExpect(jsonPath("$.email").value(editedData.getEmail()))
+                .andExpect(jsonPath("$.accessToken").exists());
 
         Optional<User> opt = userRepository.findById(createdUser.getId());
         assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited");
@@ -681,8 +682,9 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(editedData)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.USER_EDIT_SUCCESS.getMessage()));
+                .andExpect(jsonPath("$.username").value(defaultUser.getUsername()))
+                .andExpect(jsonPath("$.email").value(editedData.getEmail()))
+                .andExpect(jsonPath("$.accessToken").exists());
 
         Optional<User> opt = userRepository.findById(createdUser.getId());
         assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited");
@@ -704,8 +706,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(editedData)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.USER_EDIT_SUCCESS.getMessage()));
+                .andExpect(jsonPath("$.accessToken").exists());
 
         Optional<User> opt = userRepository.findById(createdUser.getId());
         assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited");
@@ -737,9 +738,7 @@ public class UserControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdUser.getAccessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonData))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.USER_EDIT_SUCCESS.getMessage()));
+                .andExpect(status().isOk());
 
         Optional<User> opt = userRepository.findById(createdUser.getId());
         assertTrue(opt.isPresent(), "User should be fetched with the same id after being edited with protected data");

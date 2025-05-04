@@ -52,8 +52,8 @@ public class UserController {
     @PatchMapping("")
     public ResponseEntity<Object> editUser(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader, @RequestBody UserDTO user) {
         String token = ControllerUtils.extractToken(authHeader);
-        userService.updateRawUser(token, user);
-        return ResponseFactory.createSuccessResponse(MessageStrings.USER_EDIT_SUCCESS.getMessage());
+        User u = userService.updateRawUser(token, user);
+        return ResponseEntity.ok().body(new UserResponseDTO(u).withCounts(userService.getUserCounts(u.getId())).withToken(u.getAccessToken()));
     }
 
     @DeleteMapping("")
