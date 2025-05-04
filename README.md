@@ -24,4 +24,4 @@ If you have a local postgres db on port 5432 with:
 - password as postgres
 - db name as postgres
 
-you can leave the PG env variables empty.
+you can omit the PG environ vars.
