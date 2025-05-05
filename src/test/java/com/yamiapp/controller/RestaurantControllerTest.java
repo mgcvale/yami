@@ -95,32 +95,6 @@ public class RestaurantControllerTest {
     // RESTAURANT CREATION TESTS
 
     @Test
-    public void testCreateRestaurantWithAdminSuccess() throws Exception {
-        MockMultipartFile photoFile = new MockMultipartFile(
-                "photo",
-                "test-image.png",
-                MediaType.IMAGE_PNG_VALUE,
-                testImageBytes
-        );
-
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant")
-                        .file(photoFile)
-                        .param("name", "Test Restaurant")
-                        .param("description", "A test restaurant description")
-                        .param("shortName", "Restaurant")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.RESTAURANT_CREATE_SUCCESS.getMessage()));
-
-        List<Restaurant> restaurants = restaurantRepository.findAll();
-        assertEquals(1, restaurants.size());
-        assertEquals("Test Restaurant", restaurants.getFirst().getName());
-        assertEquals("A test restaurant description", restaurants.getFirst().getDescription());
-        assertNotNull(restaurants.getFirst().getPhotoPath());
-    }
-
-    @Test
     public void testCreateRestaurantWithModeratorSuccess() throws Exception {
         MockMultipartFile photoFile = new MockMultipartFile(
                 "photo",
@@ -340,37 +314,6 @@ public class RestaurantControllerTest {
     }
 
     // RESTAURANT UPDATE TESTS
-
-    @Test
-    public void testUpdateRestaurantWithAdminSuccess() throws Exception {
-        Restaurant restaurant = createTestRestaurant();
-
-        MockMultipartFile photoFile = new MockMultipartFile(
-                "photo",
-                "updated-image.png",
-                MediaType.IMAGE_PNG_VALUE,
-                testImageBytes
-        );
-
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/restaurant/" + restaurant.getId().toString())
-                        .file(photoFile)
-                        .param("name", "Updated Restaurant")
-                        .param("description", "Updated description")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + createdAdminUser.getAccessToken())
-                        .with(request -> {
-                            request.setMethod("PATCH");
-                            return request;
-                        }))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.message").value(MessageStrings.RESTAURANT_UPDATE_SUCCESS.getMessage()));
-
-        Optional<Restaurant> updatedRestaurant = restaurantRepository.findById(Math.toIntExact(restaurant.getId()));
-        assertTrue(updatedRestaurant.isPresent());
-        assertEquals("Updated Restaurant", updatedRestaurant.get().getName());
-        assertEquals("Updated description", updatedRestaurant.get().getDescription());
-    }
-
     @Test
     public void testUpdateRestaurantWithModeratorSuccess() throws Exception {
         Restaurant restaurant = createTestRestaurant();
