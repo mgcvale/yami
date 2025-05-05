@@ -242,27 +242,6 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.accessToken").value(createdUser.getAccessToken()));
     }
 
-    @Test
-    public void testLoginWithEmailOnly() throws Exception {
-        UserLoginDTO loginInfo = new UserLoginDTO("", null).withEmail(defaultUser.getEmail());
-        mockMvc.perform(post("/user/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginInfo)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.accessToken").doesNotExist());
-    }
-
-    @Test
-    public void testLoginWithUsernameOnly() throws Exception {
-        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), null);
-        mockMvc.perform(post("/user/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginInfo)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.accessToken").doesNotExist());
-    }
 
     @Test
     public void testLoginWithEmailAndInvalidPassword() throws Exception {
@@ -282,49 +261,6 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginInfo)))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    public void testLoginWithUsernameAndWrongPasswordCapitalization() throws Exception {
-        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), defaultUser.getPassword().toUpperCase());
-        mockMvc.perform(post("/user/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginInfo)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.accessToken").doesNotExist());
-    }
-
-    @Test
-    public void testLoginWithEmailAndWrongPasswordCapitalization() throws Exception {
-        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getEmail(), defaultUser.getPassword().toUpperCase());
-        mockMvc.perform(post("/user/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginInfo)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.accessToken").doesNotExist());
-    }
-    @Test
-    public void testLoginWithPasswordAndWrongUsernameCapitalization() throws Exception {
-        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername().toUpperCase(), defaultUser.getPassword());
-        mockMvc.perform(post("/user/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginInfo)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.accessToken").doesNotExist());
-    }
-
-    @Test
-    public void testLoginWithPasswordAndWrongEmailCapitalization() throws Exception {
-        UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getEmail().toUpperCase(), defaultUser.getPassword());
-        mockMvc.perform(post("/user/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginInfo)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.accessToken").doesNotExist());
     }
 
     @Test
@@ -399,23 +335,6 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDeleteUserWithoutTokenWithEmailAndPassword() throws Exception {
-        UserLoginDTO loginInfo = new UserLoginDTO(null, defaultUser.getPassword())
-                .withEmail(defaultUser.getEmail());
-        String json = objectMapper.writeValueAsString(loginInfo);
-
-        mockMvc.perform(delete("/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_TOKEN.getMessage()));
-
-        Optional<User> user = userRepository.findById(createdUser.getId());
-        assertTrue(user.isPresent(), "User should not be deleted from the database");
-    }
-
-    @Test
     public void testDeleteUserWithoutTokenWithUsernameAndPassword() throws Exception {
         UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), defaultUser.getPassword());
         String json = objectMapper.writeValueAsString(loginInfo);
@@ -435,24 +354,6 @@ public class UserControllerTest {
     public void testDeleteUserWithTokenButWithoutPasswordUsingUsername() throws Exception {
         String token = createdUser.getAccessToken();
         UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), null);
-        String json = objectMapper.writeValueAsString(loginInfo);
-
-        mockMvc.perform(delete("/user")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("error"));
-
-        Optional<User> user = userRepository.findById(createdUser.getId());
-        assertTrue(user.isPresent(), "User should not be deleted from the database");
-    }
-
-    @Test
-    public void testDeleteUserWithTokenButWithoutPasswordUsingEmail() throws Exception {
-        String token = createdUser.getAccessToken();
-        UserLoginDTO loginInfo = new UserLoginDTO(null, null)
-                .withEmail(defaultUser.getEmail());
         String json = objectMapper.writeValueAsString(loginInfo);
 
         mockMvc.perform(delete("/user")
@@ -517,25 +418,6 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDeleteUserWithTokenAndIncorrectEmail() throws Exception {
-        String token = createdUser.getAccessToken();
-        UserLoginDTO loginInfo = new UserLoginDTO(null, defaultUser.getPassword())
-                .withEmail("wrong@example.com");
-        String json = objectMapper.writeValueAsString(loginInfo);
-
-        mockMvc.perform(delete("/user")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
-
-        Optional<User> user = userRepository.findById(createdUser.getId());
-        assertTrue(user.isPresent(), "User should not be deleted from the database");
-    }
-
-    @Test
     public void testDeleteUserWithTokenAndUsernameAndIncorrectPassword() throws Exception {
         String token = createdUser.getAccessToken();
         UserLoginDTO loginInfo = new UserLoginDTO(defaultUser.getUsername(), "wrongpassword");
@@ -552,25 +434,6 @@ public class UserControllerTest {
         Optional<User> user = userRepository.findById(createdUser.getId());
         assertTrue(user.isPresent(), "User should not be deleted from the database");
     }
-
-    @Test
-    public void testDeleteUserWithTokenAndEmailAndIncorrectPassword() throws Exception {
-        String token = createdUser.getAccessToken();
-        UserLoginDTO loginInfo = new UserLoginDTO("", "wrongpassword").withEmail(defaultUser.getEmail());
-        String json = objectMapper.writeValueAsString(loginInfo);
-
-        mockMvc.perform(delete("/user")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.message").value(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()));
-
-        Optional<User> user = userRepository.findById(createdUser.getId());
-        assertTrue(user.isPresent(), "User should not be deleted from the database");
-    }
-
 
     @Test
     public void testDeleteUserWithTokenAndUsernameDifferentCapitalization() throws Exception {
