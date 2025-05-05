@@ -9,18 +9,26 @@ import com.yamiapp.validator.UserCreateRequestValidator;
 import com.yamiapp.validator.UserEditRequestValidator;
 import com.yamiapp.validator.UserLoginRequestValidator;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -50,7 +58,7 @@ public class UserService {
         u.setLocation(dto.getLocation());
         u.setPasswordHash(encoder.encode(dto.getPassword()));
         u.setAccessToken(UUID.randomUUID().toString());
-        u.setEmail(dto.getEmail());
+        u.setEmail(dto.getEmail().toLowerCase());
         u.setRole(Role.USER);
 
         // save on db
@@ -79,7 +87,7 @@ public class UserService {
         if (dto.getUsername() != null) u.setUsername(dto.getUsername());
         if (dto.getBio() != null) u.setBio(dto.getBio());
         if (dto.getLocation() != null) u.setLocation(dto.getLocation());
-        if (dto.getEmail() != null) u.setEmail(dto.getEmail());
+        if (dto.getEmail() != null) u.setEmail(dto.getEmail().toLowerCase());
 
         try {
             User newU = userRepository.save(u);
@@ -249,6 +257,50 @@ public class UserService {
 
     public boolean userExists(Long userId) {
         return userRepository.existsById(userId);
+    }
+
+    public Page<User> searchUsersUnauthenticated(String searchParams, Pageable pageable) {
+        return userRepository.getUsersByAnonymousSearch("%" + searchParams + "%", pageable);
+    }
+
+    public Page<User> searchUsersAuthenticated(String searchParams, String accessToken, Pageable pageable) {
+        User u;
+        try{
+            u = getRawByToken(accessToken);
+        } catch (UnauthorizedException | NotFoundException e) {
+            log.warn("Failed to authenticate user in searchusersAuthenticating; falling back to searchUsersUnauthenticated");
+            return searchUsersUnauthenticated(searchParams, pageable);
+        }
+
+        searchParams = "%" + searchParams + "%";
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber();
+
+        Page<User> second = userRepository.findSecondDegree(u.getId(), searchParams, PageRequest.of(pageNumber, pageSize / 4));
+        Page<User> shared = userRepository.findSharedInterest(u.getId(), searchParams, PageRequest.of(pageNumber, pageSize / 4));
+        Page<User> popular = userRepository.findPopularUsersExcludingFollows(u.getId(), searchParams, PageRequest.of(pageNumber, pageSize / 4));
+        Page<User> general = userRepository.getUsersByAnonymousSearch(searchParams, PageRequest.of(pageNumber, pageSize / 4));
+        List<User> result = new ArrayList<>();
+
+        Set<Long> userIds = new HashSet<>();
+
+        Consumer<Page<User>> addToResult = page -> {
+            for (User user : page.getContent()) {
+                if (result.size() >= pageSize || userIds.contains(user.getId())) {
+                    continue;
+                }
+                result.add(user);
+                userIds.add(user.getId());
+            }
+        };
+
+        addToResult.accept(second);
+        addToResult.accept(shared);
+        addToResult.accept(popular);
+        addToResult.accept(general);
+
+        long total = second.getTotalElements() + shared.getTotalElements() + popular.getTotalElements() + general.getTotalElements();
+        return new PageImpl<>(result, pageable, total);
     }
 
 }

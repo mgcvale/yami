@@ -89,4 +89,19 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getUserStats(id));
     }
 
+    @GetMapping("/search/{searchParams}")
+    public ResponseEntity<Object> getUserBySearch(
+            @PathVariable() String searchParams,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
+            @RequestParam(defaultValue =  "0") Integer offset,
+            @RequestParam(defaultValue =  "50") Integer count
+    ) {
+        if (authHeader == null) return ResponseEntity.ok().body(userService.searchUsersUnauthenticated(searchParams, Pageable.ofSize(count).withPage(offset)));
+        return ResponseEntity.ok().body(userService.searchUsersAuthenticated(
+                ControllerUtils.extractToken(authHeader),
+                searchParams,
+                Pageable.ofSize(count).withPage(offset)
+        ));
+    }
+
 }

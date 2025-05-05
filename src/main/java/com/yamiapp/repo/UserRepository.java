@@ -3,6 +3,8 @@ package com.yamiapp.repo;
 import com.yamiapp.model.User;
 import com.yamiapp.model.dto.RatingDistributionEntry;
 import com.yamiapp.model.dto.UserCountsDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,7 +25,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select u from User u where u.id = :id")
     Optional<User> findById(@Param("id") Long id);
 
-
     @Query(value = """
         select
             (select COUNT(*) from follows where following_id = :userId) as followerCount,
@@ -40,6 +41,46 @@ public interface UserRepository extends JpaRepository<User, Long> {
     """, nativeQuery = true)
     List<RatingDistributionEntry> getRatingDistribution(@Param("userId") Long userId);
 
-    @Query("SELECT AVG(r.rating) FROM FoodReview r WHERE r.user.id = :userId")
+    @Query("select AVG(r.rating) from FoodReview r where r.user.id = :userId")
     Double getAverageRating(@Param("userId") Long userId);
+
+        @Query("select u from User u where u.username like :searchParams")
+        Page<User> getUsersByAnonymousSearch(@Param("searchParams") String searchParams, Pageable pageable);
+
+        @Query("""
+        SELECT DISTINCT f2
+        FROM User u
+        JOIN u.following f1
+        JOIN f1.following f2
+        WHERE u.id = :userId
+        AND LOWER(f2.username) LIKE LOWER(:search)
+        AND f2.id <> :userId
+    """)
+        Page<User> findSecondDegree(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
+
+        @Query("""
+        SELECT DISTINCT u
+        FROM User u
+        JOIN u.following f
+        WHERE f IN (
+            SELECT f1 FROM User u2 JOIN u2.following f1 WHERE u2.id = :userId
+        )
+        AND u.id <> :userId
+        AND LOWER(u.username) LIKE LOWER(:search)
+    """)
+        Page<User> findSharedInterest(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
+
+        @Query(value = """
+        SELECT u.*
+        FROM users u
+        LEFT JOIN follows f ON f.following_id = u.user_id
+        WHERE u.user_id NOT IN (
+            SELECT following_id FROM follows WHERE follower_id = :userId
+        ) AND u.user_id <> :userId
+        AND LOWER(u.username) LIKE LOWER(:search)
+        GROUP BY u.user_id
+        ORDER BY COUNT(f.follower_id) DESC
+    """, nativeQuery = true)
+        Page<User> findPopularUsersExcludingFollows(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
+
 }
