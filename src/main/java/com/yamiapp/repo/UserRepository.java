@@ -44,21 +44,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select AVG(r.rating) from FoodReview r where r.user.id = :userId")
     Double getAverageRating(@Param("userId") Long userId);
 
-        @Query("select u from User u where u.username like :searchParams")
-        Page<User> getUsersByAnonymousSearch(@Param("searchParams") String searchParams, Pageable pageable);
+    @Query("select u from User u where u.username ilike :searchParams")
+    Page<User> getUsersByAnonymousSearch(@Param("searchParams") String searchParams, Pageable pageable);
 
-        @Query("""
+    @Query("""
         SELECT DISTINCT f2
         FROM User u
         JOIN u.following f1
         JOIN f1.following f2
         WHERE u.id = :userId
-        AND LOWER(f2.username) LIKE LOWER(:search)
+        AND LOWER(f2.username) iLIKE LOWER(:search)
         AND f2.id <> :userId
     """)
-        Page<User> findSecondDegree(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
+    Page<User> findSecondDegree(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
 
-        @Query("""
+    @Query("""
         SELECT DISTINCT u
         FROM User u
         JOIN u.following f
@@ -68,9 +68,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
         AND u.id <> :userId
         AND LOWER(u.username) LIKE LOWER(:search)
     """)
-        Page<User> findSharedInterest(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
+    Page<User> findSharedInterest(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
 
-        @Query(value = """
+    @Query(value = """
         SELECT u.*
         FROM users u
         LEFT JOIN follows f ON f.following_id = u.user_id
@@ -81,6 +81,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
         GROUP BY u.user_id
         ORDER BY COUNT(f.follower_id) DESC
     """, nativeQuery = true)
-        Page<User> findPopularUsersExcludingFollows(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
+    Page<User> findPopularUsersExcludingFollows(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
 
 }

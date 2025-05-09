@@ -259,11 +259,12 @@ public class UserService {
         return userRepository.existsById(userId);
     }
 
-    public Page<User> searchUsersUnauthenticated(String searchParams, Pageable pageable) {
-        return userRepository.getUsersByAnonymousSearch("%" + searchParams + "%", pageable);
+    public Page<UserResponseDTO> searchUsersUnauthenticated(String searchParams, Pageable pageable) {
+        Page<User> users = userRepository.getUsersByAnonymousSearch("%" + searchParams + "%", pageable);
+        return users.map(user -> new UserResponseDTO(user).withoutSensitiveData());
     }
 
-    public Page<User> searchUsersAuthenticated(String searchParams, String accessToken, Pageable pageable) {
+    public Page<UserResponseDTO> searchUsersAuthenticated(String searchParams, String accessToken, Pageable pageable) {
         User u;
         try{
             u = getRawByToken(accessToken);
@@ -280,7 +281,7 @@ public class UserService {
         Page<User> shared = userRepository.findSharedInterest(u.getId(), searchParams, PageRequest.of(pageNumber, pageSize / 4));
         Page<User> popular = userRepository.findPopularUsersExcludingFollows(u.getId(), searchParams, PageRequest.of(pageNumber, pageSize / 4));
         Page<User> general = userRepository.getUsersByAnonymousSearch(searchParams, PageRequest.of(pageNumber, pageSize / 4));
-        List<User> result = new ArrayList<>();
+        List<UserResponseDTO> result = new ArrayList<>();
 
         Set<Long> userIds = new HashSet<>();
 
@@ -289,7 +290,7 @@ public class UserService {
                 if (result.size() >= pageSize || userIds.contains(user.getId())) {
                     continue;
                 }
-                result.add(user);
+                result.add(new UserResponseDTO(user).withoutSensitiveData());
                 userIds.add(user.getId());
             }
         };
