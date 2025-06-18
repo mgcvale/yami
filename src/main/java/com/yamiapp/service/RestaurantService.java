@@ -142,8 +142,7 @@ public class RestaurantService {
     }
 
     public Page<RestaurantResposneDTO> searchRestaurantsUnauthenticated(String searchParams, Pageable page) {
-        Page<Restaurant> restaurants = restaurantRepository.getRestaurantsByAnonymousSearch(searchParams, page);
-        return restaurants.map(RestaurantResposneDTO::new);
+        return restaurantRepository.getRestaurantsByAnonymousSearch(searchParams, page);
     }
 
     @Transactional
@@ -176,7 +175,20 @@ public class RestaurantService {
     }
 
     public RestaurantResposneDTO getById(Integer id) {
-        return new RestaurantResposneDTO(getRawById(id));
+        try {
+            Optional<RestaurantResposneDTO> optionalRestaurant = restaurantRepository.getRestaurantByIdWithMetrics(id);
+            if (optionalRestaurant.isPresent()) {
+                return optionalRestaurant.get();
+            } else {
+                throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
+            }
+        } catch (EntityNotFoundException e) {
+            throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (Exception e) {
+            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
+        }
     }
 
     public Restaurant getRawById(Integer id) {

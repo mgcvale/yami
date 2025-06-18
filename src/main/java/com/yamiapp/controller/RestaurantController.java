@@ -1,8 +1,6 @@
 package com.yamiapp.controller;
 
 import com.backblaze.b2.client.exceptions.B2Exception;
-import com.yamiapp.exception.ErrorStrings;
-import com.yamiapp.exception.UnauthorizedException;
 import com.yamiapp.model.dto.RestaurantDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
 import com.yamiapp.service.RestaurantService;

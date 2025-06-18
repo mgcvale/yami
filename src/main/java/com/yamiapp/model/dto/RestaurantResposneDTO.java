@@ -11,11 +11,23 @@ public class RestaurantResposneDTO {
     private String name;
     private String shortName;
     private String description;
+    private Long foodCount;
+    private Long reviewCount;
+
 
     public RestaurantResposneDTO(Long id, String name, String shortName, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
+    }
+
+    public RestaurantResposneDTO(Long id, String name, String shortName, String description, Long foodCount, Long reviewCount) {
+        this.id = id;
+        this.name = name;
+        this.shortName = shortName;
+        this.description = description;
+        this.foodCount = foodCount;
+        this.reviewCount = reviewCount;
     }
 
     public RestaurantResposneDTO(Restaurant r) {
