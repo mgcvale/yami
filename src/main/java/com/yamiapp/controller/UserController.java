@@ -85,7 +85,6 @@ public class UserController {
 
     @GetMapping("/{id}/stats")
     public ResponseEntity<Object> getUserStats(@PathVariable Long id) {
-        System.out.println("\n\n\n\n\n\n----RESPONSE----\n" + userService.getUserStats(id).averageRating() + "\n" + userService.getUserStats(id).ratingDistribution());
         return ResponseEntity.ok().body(userService.getUserStats(id));
     }
 

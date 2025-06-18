@@ -46,7 +46,6 @@ public enum ErrorStrings {
     CANNOT_FOLLOW_ONESELF("You cannot follow yourself.");
 
 
-
     private final String message;
 
     ErrorStrings(String message) {

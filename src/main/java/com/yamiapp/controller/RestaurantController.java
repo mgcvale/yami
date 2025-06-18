@@ -9,6 +9,7 @@ import com.yamiapp.service.RestaurantService;
 import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -70,6 +71,16 @@ public class RestaurantController {
 
         restaurantService.deleteRestaurant(id, token, dto);
         return ResponseFactory.createSuccessResponse(MessageStrings.RESTAURANT_DELETE_SUCCESS.getMessage());
+    }
+
+    @GetMapping("/search/{searchParams}")
+    public ResponseEntity<Object> searchRestaurantsUnauthenticated(
+        @PathVariable(value = "searchParams") String searchPrams,
+        @RequestParam(defaultValue =  "0") Integer offset,
+        @RequestParam(defaultValue =  "50") Integer count
+    ) {
+        // no need for token here
+        return ResponseEntity.ok().body(restaurantService.searchRestaurantsUnauthenticated(searchPrams, Pageable.ofSize(count).withPage(offset)));
     }
 
     @GetMapping("/{id}")

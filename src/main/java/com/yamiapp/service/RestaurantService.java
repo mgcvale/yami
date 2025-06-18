@@ -16,6 +16,8 @@ import lombok.Setter;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -137,6 +139,11 @@ public class RestaurantService {
             }
             throw new InternalServerException(ErrorStrings.INTEGRITY.getMessage());
         }
+    }
+
+    public Page<RestaurantResposneDTO> searchRestaurantsUnauthenticated(String searchParams, Pageable page) {
+        Page<Restaurant> restaurants = restaurantRepository.getRestaurantsByAnonymousSearch(searchParams, page);
+        return restaurants.map(RestaurantResposneDTO::new);
     }
 
     @Transactional
