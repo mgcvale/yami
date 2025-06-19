@@ -91,4 +91,6 @@ public class RestaurantController {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(restaurantService.getImageById(id));
     }
 
+
+
 }

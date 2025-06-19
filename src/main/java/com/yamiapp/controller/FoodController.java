@@ -110,5 +110,9 @@ public class FoodController {
         return new ResponseFactory.JsonResponseChain().add("average", avg).build();
     }
 
+    @GetMapping("/by_restaurant/{id}")
+    public ResponseEntity<Object> getFoodsByRestaurant(@PathVariable Long id) {
+        return ResponseEntity.ok().body(foodService.getByRestaurantId(id));
+    }
 
 }

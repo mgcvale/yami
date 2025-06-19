@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 import static com.yamiapp.util.ServiceUtils.convertToJPEG;
@@ -216,5 +217,13 @@ public class FoodService {
 
     public Resource getImageById(Integer id) throws B2Exception {
         return backblazeService.downloadFile(getRawById(id).getPhotoPath());
+    }
+
+    public List<Food> getRawByRestaurantId(Long id) {
+        return foodRepository.getRestaurantFoods(id);
+    }
+
+    public List<FoodResponseDTO> getByRestaurantId(Long id) {
+        return getRawByRestaurantId(id).stream().map(FoodResponseDTO::new).toList();
     }
 }
