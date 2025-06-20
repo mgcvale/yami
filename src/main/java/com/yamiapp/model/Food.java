@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
-
 @Getter
 @Setter
 @Table(
@@ -14,6 +12,10 @@ import java.util.Set;
 )
 @Entity
 public class Food {
+    public Food() {
+        avgRating = 0D;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "food_id")
@@ -32,6 +34,10 @@ public class Food {
     @Setter
     @Column(nullable = true, name = "photo_id")
     private String photoId;
+
+    @Setter
+    @Column(name = "avg_rating")
+    private Double avgRating;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")

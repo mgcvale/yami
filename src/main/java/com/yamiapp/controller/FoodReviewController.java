@@ -9,6 +9,8 @@ import com.yamiapp.service.FoodReviewService;
 import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -72,4 +74,26 @@ public class FoodReviewController {
         }
         throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
     }
+
+    @GetMapping("/from_restaurant/{id}")
+    public ResponseEntity<Object> getFoodReviewsFromRestaurant(
+        @PathVariable Long id,
+        @RequestParam(defaultValue = "0") Integer offset,
+        @RequestParam(defaultValue = "50") Integer count
+    ) {
+        return ResponseEntity.ok().body(foodReviewService.getFoodReviewByRestaurant(id, Pageable.ofSize(count).withPage(offset)));
+    }
+
+    @GetMapping("/from_user/{id}")
+    public ResponseEntity<Object> getUserReviews(
+        @PathVariable Long id,
+        @RequestParam(defaultValue = "0") Integer offset,
+        @RequestParam(defaultValue = "50") Integer count,
+        @RequestParam(required = false, defaultValue = "") String keyword
+    ) {
+        Page<FoodReview> foodReviews = foodReviewService.getFoodReviewsByUser(id, "", keyword, Pageable.ofSize(count).withPage(offset));
+        Page<FoodReviewResponseDTO> responseReviews = foodReviews.map(FoodReviewResponseDTO::new);
+        return ResponseEntity.ok().body(responseReviews);
+    }
+
 }

@@ -1,6 +1,5 @@
 package com.yamiapp.controller;
 
-import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.User;
 import com.yamiapp.model.dto.*;
 import com.yamiapp.service.FoodReviewService;
@@ -9,9 +8,6 @@ import com.yamiapp.service.UserService;
 import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +18,10 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final FoodReviewService foodReviewService;
     private final UserFollowService userFollowService;
 
-    public UserController(UserService userService, FoodReviewService foodReviewService, UserFollowService userFollowService) {
+    public UserController(UserService userService, UserFollowService userFollowService) {
         this.userService = userService;
-        this.foodReviewService = foodReviewService;
         this.userFollowService = userFollowService;
     }
 
@@ -69,18 +63,6 @@ public class UserController {
 
         String token = ControllerUtils.extractToken(authHeader);
         return ResponseEntity.ok().body(userService.getById(id).withoutSensitiveData().withCounts(userService.getUserCounts(id)).withFollowing(userFollowService.isFollowingByToken(token, id)));
-    }
-
-    @GetMapping("/{id}/reviews")
-    public ResponseEntity<Object> getUserReviews(
-            @PathVariable Long id,
-            @RequestParam(defaultValue = "0") Integer offset,
-            @RequestParam(defaultValue = "50") Integer count,
-            @RequestParam(required = false, defaultValue = "") String keyword
-    ) {
-        Page<FoodReview> foodReviews = foodReviewService.getFoodReviewsByUser(id, "", keyword, Pageable.ofSize(count).withPage(offset));
-        Page<FoodReviewResponseDTO> responseReviews = foodReviews.map(FoodReviewResponseDTO::new);
-        return ResponseEntity.ok().body(responseReviews);
     }
 
     @GetMapping("/{id}/stats")

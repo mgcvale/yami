@@ -106,7 +106,7 @@ public class FoodService {
     }
 
     @Transactional
-    public Food updateFood(Integer id, FoodDTO foodDTO, String accessToken) throws B2Exception {
+    public Food updateFood(Long id, FoodDTO foodDTO, String accessToken) throws B2Exception {
         updateValidator.validate(foodDTO);
         validateModeratorUser(userService, accessToken);
 
@@ -151,7 +151,7 @@ public class FoodService {
     }
 
     @Transactional
-    public void deleteFood(Integer id, String userToken, UserLoginDTO loginDTO) throws B2Exception {
+    public void deleteFood(Long id, String userToken, UserLoginDTO loginDTO) throws B2Exception {
         userLoginRequestValidator.validate(loginDTO);
         validateModeratorUser(userService, userToken);
         String pwdToken = userService.getRawByPassword(loginDTO).getAccessToken();
@@ -190,11 +190,11 @@ public class FoodService {
         foodRepository.delete(f);
     }
 
-    public FoodResponseDTO getById(Integer id) {
+    public FoodResponseDTO getById(Long id) {
         return new FoodResponseDTO(getRawById(id));
     }
 
-    public Food getRawById(Integer id) {
+    public Food getRawById(Long id) {
         try {
             Optional<Food> optionalFood = foodRepository.findById(id);
             if (optionalFood.isPresent()) {
@@ -215,8 +215,15 @@ public class FoodService {
         return foodRepository.getAverageRating(id);
     }
 
-    public Resource getImageById(Integer id) throws B2Exception {
-        return backblazeService.downloadFile(getRawById(id).getPhotoPath());
+    public Resource getImageById(Long id) throws B2Exception {
+
+        Food f = getRawById(id);
+        String photoPath = f.getPhotoPath();
+        if (photoPath == null) {
+            throw new NotFoundException(ErrorStrings.FOOD_DOESNT_HAVE_PHOTO.getMessage());
+        }
+
+        return backblazeService.downloadFile(photoPath);
     }
 
     public List<Food> getRawByRestaurantId(Long id) {

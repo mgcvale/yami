@@ -43,7 +43,8 @@ public enum ErrorStrings {
     BAD_FOOD_REVIEW_LENGTH("The Food review rating must have between 2 and 512 characters."),
     NOT_OWNER_OF_FOOD_REVIEW("You are not the owner of this review."),
     INVALID_FOOD_REVIEW_ID("No food review was found with this ID"),
-    CANNOT_FOLLOW_ONESELF("You cannot follow yourself.");
+    CANNOT_FOLLOW_ONESELF("You cannot follow yourself."),
+    FOOD_DOESNT_HAVE_PHOTO("This food doesn't have a picture of it.");
 
 
     private final String message;

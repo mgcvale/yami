@@ -43,7 +43,7 @@ public class FoodReviewService {
         createValidator.validate(dto);
         User user = userService.getRawByToken(token);
 
-        Optional<Food> optFood = foodRepository.findById(Math.toIntExact(foodId));
+        Optional<Food> optFood = foodRepository.findById(foodId);
         if (optFood.isEmpty()) {
             throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
         }
@@ -54,15 +54,17 @@ public class FoodReviewService {
         review.setRating(dto.getRating());
         review.setUser(user);
         review.setFood(food);
+        FoodReview result = foodReviewRepository.save(review);
 
-        return foodReviewRepository.save(review);
+        // now we update that food's average rating
+        foodRepository.updateAverageRating(food.getId());
+
+        return result;
     }
 
     @Transactional
     public FoodReview updateFoodReview(Long reviewId, FoodReviewDTO dto, String token) {
-        // Validate update DTO
         updateValidator.validate(dto);
-        // Validate token and get current user
         User user = userService.getRawByToken(token);
 
         Optional<FoodReview> optReview = foodReviewRepository.findById(reviewId);
@@ -81,6 +83,8 @@ public class FoodReviewService {
         }
         if (dto.getRating() != null) {
             review.setRating(dto.getRating());
+            // we only update the food avg rating if the rating was altered
+            foodRepository.updateAverageRating(review.getFood().getId());
         }
 
         return foodReviewRepository.save(review);
@@ -97,11 +101,15 @@ public class FoodReviewService {
         if (!review.getUser().getId().equals(user.getId())) {
             throw new ForbiddenException(ErrorStrings.NOT_OWNER_OF_FOOD_REVIEW.getMessage());
         }
+
+        Long foodId = review.getFood().getId();
         foodReviewRepository.delete(review);
+
+        foodRepository.updateAverageRating(foodId);
     }
 
     public Page<FoodReview> getFoodReviewsByFoodId(Long foodId, String reviewKeyword, Pageable pageable) {
-        if (!foodRepository.existsById(Math.toIntExact(foodId))) {
+        if (!foodRepository.existsById(foodId)) {
             throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
         }
 
@@ -146,6 +154,10 @@ public class FoodReviewService {
             };
             return foodReviewRepository.findAll(spec, pageable);
         }
+    }
+
+    public Page<FoodReview> getFoodReviewByRestaurant(Long restaurantId, Pageable pageable) {
+        return foodReviewRepository.getFoodReviewsByRestaurantId(restaurantId, pageable);
     }
 
     public Optional<FoodReview> getFoodReviewById(Long foodReviewId) {

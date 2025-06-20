@@ -51,7 +51,7 @@ public class FoodController {
     @PatchMapping("/{foodId}")
     public ResponseEntity<Object> updateFood(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
-            @PathVariable Integer foodId,
+            @PathVariable Long foodId,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "restaurantId", required = false) Integer restaurantId,
@@ -71,7 +71,7 @@ public class FoodController {
             @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "password", required = false) String password,
-            @PathVariable Integer foodId
+            @PathVariable Long foodId
     ) throws B2Exception {
         String token = ControllerUtils.extractToken(authHeader);
 
@@ -81,12 +81,12 @@ public class FoodController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getById(@PathVariable Integer id) {
+    public ResponseEntity<Object> getById(@PathVariable Long id) {
         return ResponseEntity.ok().body(foodService.getById(id));
     }
 
     @GetMapping("/{id}/picture")
-    public ResponseEntity<Object> getPictureById(@PathVariable Integer id) throws B2Exception {
+    public ResponseEntity<Object> getPictureById(@PathVariable Long id) throws B2Exception {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(foodService.getImageById(id));
     }
 

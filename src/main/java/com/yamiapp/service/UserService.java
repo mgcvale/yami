@@ -119,25 +119,17 @@ public class UserService {
 
     //TODO: optimize by deleting via access token
     public void deleteUser(User u) {
-        try {
-            userRepository.delete(u);
-        } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.NO_USER_FOUND.getMessage());
-        }
+        userRepository.delete(u);
     }
 
     public void deleteUser(String accessToken, UserLoginDTO loginInfo) {
         loginValidator.validate(loginInfo);
         User found;
 
-        try {
-            Optional<User> u = userRepository.findByAccessToken(accessToken);
-            if (u.isPresent()) {
-                found = u.get();
-            } else {
-                throw new InternalServerException(ErrorStrings.INVALID_TOKEN.getMessage());
-            }
-        } catch (EntityNotFoundException e) {
+        Optional<User> u = userRepository.findByAccessToken(accessToken);
+        if (u.isPresent()) {
+            found = u.get();
+        } else {
             throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
         }
 
@@ -155,14 +147,11 @@ public class UserService {
         if (accessToken == null) {
             throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
         }
-        try {
-            Optional<User> u = userRepository.findByAccessToken(accessToken);
-            if (u.isPresent()) {
-                return u.get();
-            } else {
-                throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
-            }
-        } catch (EntityNotFoundException e) {
+
+        Optional<User> u = userRepository.findByAccessToken(accessToken);
+        if (u.isPresent()) {
+            return u.get();
+        } else {
             throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
         }
     }

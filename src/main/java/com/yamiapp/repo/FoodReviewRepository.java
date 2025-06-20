@@ -20,5 +20,9 @@ public interface FoodReviewRepository extends JpaRepository<FoodReview, Long> {
     @Query("select fr from FoodReview fr where fr.food.id = :foodId")
     Page<FoodReview> getFoodReviewsByFoodId(@Param("foodId") Long foodId, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"food", "food.restaurant"})
+    @Query("select fr from FoodReview fr where fr.food.restaurant.id = :restaurantId")
+    Page<FoodReview> getFoodReviewsByRestaurantId(@Param("restaurantId") Long restaurantId, Pageable pageable);
+
     Page<FoodReview> findAll(Specification<FoodReview> spec, Pageable pageable);
 }
