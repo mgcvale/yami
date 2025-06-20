@@ -41,7 +41,6 @@ public class FoodService {
     private final RestaurantService restaurantService;
     private final FoodUpdateValidator updateValidator;
     private final UserLoginRequestValidator userLoginRequestValidator;
-    private final RestaurantRepository restaurantRepository;
 
     public FoodService(
             final FoodRepository foodRepository,
@@ -49,7 +48,8 @@ public class FoodService {
             final FoodCreateValidator createValidator,
             final UserService userService,
             RestaurantService restaurantService,
-            UserLoginRequestValidator userLoginRequestValidator, RestaurantRepository restaurantRepository, FoodUpdateValidator foodUpdateValidator) {
+            UserLoginRequestValidator userLoginRequestValidator,
+            FoodUpdateValidator foodUpdateValidator) {
         this.foodRepository = foodRepository;
         this.backblazeService = backblazeService;
         this.createValidator = createValidator;
@@ -57,7 +57,6 @@ public class FoodService {
         this.restaurantService = restaurantService;
         this.updateValidator = foodUpdateValidator;
         this.userLoginRequestValidator = userLoginRequestValidator;
-        this.restaurantRepository = restaurantRepository;
     }
 
 
@@ -110,22 +109,7 @@ public class FoodService {
         updateValidator.validate(foodDTO);
         validateModeratorUser(userService, accessToken);
 
-        Food f;
-
-        try {
-            Optional<Food> optFood = foodRepository.findById(id);
-            if (optFood.isPresent()) {
-                f = optFood.get();
-            } else {
-                throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
-            }
-        } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
-        } catch (NotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
-        }
+        Food f = getRawById(id);
 
         if (foodDTO.getName() != null) f.setName(foodDTO.getName());
         if (foodDTO.getDescription() != null) f.setDescription(foodDTO.getDescription());
@@ -159,21 +143,7 @@ public class FoodService {
             throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
         }
 
-        Food f;
-
-        try {
-            Optional<Food> optFood = foodRepository.findById(id);
-            if (optFood.isEmpty()) {
-                throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
-            }
-            f = optFood.get();
-        } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
-        } catch (NotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
-        }
+        Food f = getRawById(id);
 
         if (f.getPhotoId() != null) {
             try {
@@ -195,20 +165,8 @@ public class FoodService {
     }
 
     public Food getRawById(Long id) {
-        try {
-            Optional<Food> optionalFood = foodRepository.findById(id);
-            if (optionalFood.isPresent()) {
-                return optionalFood.get();
-            } else {
-                throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
-            }
-        } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
-        } catch (NotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
-        }
+        return foodRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage()));
     }
 
     public double getAverageRating(Long id) {
