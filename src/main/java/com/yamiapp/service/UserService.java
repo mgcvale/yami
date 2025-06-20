@@ -105,12 +105,7 @@ public class UserService {
     public User updateRawUser(String accessToken, UserDTO dto) {
         editValidator.validate(dto);
 
-        Optional<User> optUser = userRepository.findByAccessToken(accessToken);
-        if (optUser.isPresent()) {
-            return updateRawUser(optUser.get(), dto);
-        } else {
-            throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
-        }
+        return updateRawUser(getRawByToken(accessToken), dto);
     }
 
     //TODO: optimize by deleting via access token
@@ -120,20 +115,14 @@ public class UserService {
 
     public void deleteUser(String accessToken, UserLoginDTO loginInfo) {
         loginValidator.validate(loginInfo);
-        User found;
 
-        Optional<User> u = userRepository.findByAccessToken(accessToken);
-        if (u.isPresent()) {
-            found = u.get();
-        } else {
-            throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
-        }
+        User u = getRawByToken(accessToken);
 
         if (
-                encoder.matches(loginInfo.getPassword(), found.getPasswordHash()) &&
-                (loginInfo.getUsername().equals(found.getUsername()) || loginInfo.getEmail().equals(found.getEmail()))
+                encoder.matches(loginInfo.getPassword(), u.getPasswordHash()) &&
+                (loginInfo.getUsername().equals(u.getUsername()) || loginInfo.getEmail().equals(u.getEmail()))
         ) {
-            deleteUser(found);
+            deleteUser(u);
         } else {
             throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
         }
@@ -144,12 +133,9 @@ public class UserService {
             throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
         }
 
-        Optional<User> u = userRepository.findByAccessToken(accessToken);
-        if (u.isPresent()) {
-            return u.get();
-        } else {
-            throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
-        }
+        return userRepository.findByAccessToken(accessToken)
+            .orElseThrow(() -> new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()));
+
     }
 
     public UserResponseDTO getByToken(String accessToken) {
@@ -159,15 +145,14 @@ public class UserService {
     public User getRawByPassword(UserLoginDTO loginInfo) {
         loginValidator.validate(loginInfo);
 
-        Optional<User> optUser = userRepository.findByUsernameOrEmail(loginInfo.getUsername(), loginInfo.getEmail());
-        if (optUser.isPresent()) {
-            var u = optUser.get();
-            if (encoder.matches(loginInfo.getPassword(), u.getPasswordHash())) {
-                return u;
-            }
+        User u = userRepository.findByUsernameOrEmail(loginInfo.getUsername(), loginInfo.getEmail())
+            .orElseThrow(() -> new UnauthorizedException(loginInfo.getEmail().isEmpty() ? ErrorStrings.INVALID_USERNAME.getMessage() : ErrorStrings.INVALID_EMAIL.getMessage()));
+
+        if (encoder.matches(loginInfo.getPassword(), u.getPasswordHash())) {
+            return u;
+        } else {
             throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
         }
-        throw new UnauthorizedException(loginInfo.getEmail().isEmpty() ? ErrorStrings.INVALID_USERNAME.getMessage() : ErrorStrings.INVALID_EMAIL.getMessage());
     }
 
     public UserResponseDTO getByPassword(UserLoginDTO loginDTO) {
@@ -175,12 +160,8 @@ public class UserService {
     }
 
     public User getRawById(Long id) {
-        Optional<User> optUser = userRepository.findById(id);
-        if (optUser.isPresent()) {
-            return optUser.get();
-        } else {
-            throw new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage());
-        }
+        return userRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage()));
     }
 
     public UserCountsDTO getUserCounts(Long userId) {
@@ -198,7 +179,6 @@ public class UserService {
 
         try {
             List<RatingDistributionEntry> ratingDistributionEntries = userRepository.getRatingDistribution(userId);
-            System.out.println("DISTRIBUTION: " + ratingDistributionEntries);
             Double avgRating = userRepository.getAverageRating(userId);
             avgRating = (avgRating == null) ? 0D : avgRating;
 
