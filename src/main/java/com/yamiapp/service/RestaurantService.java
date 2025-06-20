@@ -100,20 +100,7 @@ public class RestaurantService {
         updateValidator.validate(dto);
         validateModeratorUser(userService, userToken);
 
-        Restaurant r;
-        try {
-            Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(id);
-            if (optionalRestaurant.isEmpty()) {
-                throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
-            }
-            r = optionalRestaurant.get();
-        } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
-        } catch (NotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
-        }
+        Restaurant r = getRawById(id);
 
         if (dto.getName() != null) r.setName(dto.getName());
         if (dto.getDescription() != null) r.setDescription(dto.getDescription());
@@ -154,58 +141,19 @@ public class RestaurantService {
             throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
         }
 
-        Restaurant r;
-
-        try {
-            Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(id);
-            if (optionalRestaurant.isEmpty()) {
-                throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
-            }
-            r = optionalRestaurant.get();
-        } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
-        } catch (NotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
-        }
+        Restaurant r = getRawById(id);
 
         backblazeService.deleteFile(r.getPhotoPath(), r.getPhotoId());
         restaurantRepository.delete(r);
     }
 
     public RestaurantResposneDTO getById(Integer id) {
-        try {
-            Optional<RestaurantResposneDTO> optionalRestaurant = restaurantRepository.getRestaurantByIdWithMetrics(id);
-            if (optionalRestaurant.isPresent()) {
-                return optionalRestaurant.get();
-            } else {
-                throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
-            }
-        } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
-        } catch (NotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
-        }
+        return new RestaurantResposneDTO(getRawById(id));
     }
 
     public Restaurant getRawById(Integer id) {
-        try {
-            Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(id);
-            if (optionalRestaurant.isPresent()) {
-                return optionalRestaurant.get();
-            } else {
-                throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
-            }
-        } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
-        } catch (NotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception e) {
-            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
-        }
+        return restaurantRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage()));
     }
 
     public Resource getImageById(Integer id) {
@@ -216,13 +164,10 @@ public class RestaurantService {
             } else {
                 throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
             }
-        } catch (EntityNotFoundException e) {
-            throw new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage());
-        } catch (NotFoundException e) {
-            throw new NotFoundException(e.getMessage());
+        } catch (B2Exception e) {
+            throw new InternalServerException(ErrorStrings.B2_UPSTREAM.getMessage());
         } catch (Exception e) {
             throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
         }
     }
-
 }

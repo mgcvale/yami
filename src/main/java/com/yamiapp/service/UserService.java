@@ -105,14 +105,10 @@ public class UserService {
     public User updateRawUser(String accessToken, UserDTO dto) {
         editValidator.validate(dto);
 
-        try {
-            Optional<User> optUser = userRepository.findByAccessToken(accessToken);
-            if (optUser.isPresent()) {
-                return updateRawUser(optUser.get(), dto);
-            } else {
-                throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
-            }
-        } catch (Exception e) {
+        Optional<User> optUser = userRepository.findByAccessToken(accessToken);
+        if (optUser.isPresent()) {
+            return updateRawUser(optUser.get(), dto);
+        } else {
             throw new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage());
         }
     }
@@ -163,19 +159,15 @@ public class UserService {
     public User getRawByPassword(UserLoginDTO loginInfo) {
         loginValidator.validate(loginInfo);
 
-        try {
-            Optional<User> optUser = userRepository.findByUsernameOrEmail(loginInfo.getUsername(), loginInfo.getEmail());
-            if (optUser.isPresent()) {
-                var u = optUser.get();
-                if (encoder.matches(loginInfo.getPassword(), u.getPasswordHash())) {
-                    return u;
-                }
-                throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
+        Optional<User> optUser = userRepository.findByUsernameOrEmail(loginInfo.getUsername(), loginInfo.getEmail());
+        if (optUser.isPresent()) {
+            var u = optUser.get();
+            if (encoder.matches(loginInfo.getPassword(), u.getPasswordHash())) {
+                return u;
             }
-            throw new UnauthorizedException(loginInfo.getEmail().isEmpty() ? ErrorStrings.INVALID_USERNAME.getMessage() : ErrorStrings.INVALID_EMAIL.getMessage());
-        } catch (EntityNotFoundException e) {
-            throw new UnauthorizedException(loginInfo.getEmail().isEmpty() ? ErrorStrings.INVALID_USERNAME.getMessage() : ErrorStrings.INVALID_EMAIL.getMessage());
+            throw new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage());
         }
+        throw new UnauthorizedException(loginInfo.getEmail().isEmpty() ? ErrorStrings.INVALID_USERNAME.getMessage() : ErrorStrings.INVALID_EMAIL.getMessage());
     }
 
     public UserResponseDTO getByPassword(UserLoginDTO loginDTO) {
@@ -183,27 +175,19 @@ public class UserService {
     }
 
     public User getRawById(Long id) {
-        try {
-            Optional<User> optUser = userRepository.findById(id);
-            if (optUser.isPresent()) {
-                return optUser.get();
-            } else {
-                throw new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage());
-            }
-        } catch (EntityNotFoundException e) {
+        Optional<User> optUser = userRepository.findById(id);
+        if (optUser.isPresent()) {
+            return optUser.get();
+        } else {
             throw new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage());
-        } catch (NotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
         }
     }
 
     public UserCountsDTO getUserCounts(Long userId) {
         try {
             return userRepository.getUserCounts(userId);
-        } catch (Exception e) {
-            throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
+        } catch (EntityNotFoundException e) {
+            throw new NotFoundException(ErrorStrings.INVALID_USER_ID.getMessage());
         }
     }
 

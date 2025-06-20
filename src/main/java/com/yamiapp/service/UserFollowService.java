@@ -80,6 +80,4 @@ public class UserFollowService {
     public boolean isFollowingByToken(String followerToken, Long followedId) {
         return userFollowRepository.existsFollowingByAccessTokenAndTargetId(followerToken, followedId);
     }
-
-
 }
