@@ -147,6 +147,10 @@ public class RestaurantService {
         restaurantRepository.delete(r);
     }
 
+    public RestaurantResposneDTO getByIdWithMetrics(Integer id) {
+        return restaurantRepository.getRestaurantByIdWithMetrics(id).orElseThrow(() -> new NotFoundException(ErrorStrings.INVALID_RESTAURANT_ID.getMessage()));
+    }
+
     public RestaurantResposneDTO getById(Integer id) {
         return new RestaurantResposneDTO(getRawById(id));
     }

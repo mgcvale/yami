@@ -4,6 +4,8 @@ import com.yamiapp.model.User;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 public class UserResponseDTO {
@@ -21,8 +23,8 @@ public class UserResponseDTO {
     public UserResponseDTO(User user) {
         this.id = user.getId();
         this.username = user.getUsername();
-        this.bio = user.getBio();
-        this.location = user.getLocation();
+        this.bio = Objects.requireNonNullElse(user.getBio(), "");
+        this.location = Objects.requireNonNullElse(user.getLocation(), "");
         this.email = user.getEmail();
         this.following = false;
     }

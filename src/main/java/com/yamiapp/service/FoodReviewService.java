@@ -5,6 +5,7 @@ import com.yamiapp.model.Food;
 import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.User;
 import com.yamiapp.model.dto.FoodReviewDTO;
+import com.yamiapp.model.dto.FoodReviewResponseDTO;
 import com.yamiapp.repo.FoodReviewRepository;
 import com.yamiapp.repo.FoodRepository;
 import com.yamiapp.validator.FoodReviewCreateValidator;
@@ -39,15 +40,16 @@ public class FoodReviewService {
     }
 
     @Transactional
-    public FoodReview createFoodReview(FoodReviewDTO dto, String token, Long foodId) {
+    public FoodReviewResponseDTO createFoodReview(FoodReviewDTO dto, String token, Long foodId) {
+        return new FoodReviewResponseDTO(createRawFoodReview(dto, token, foodId));
+    }
+
+    @Transactional
+    public FoodReview createRawFoodReview(FoodReviewDTO dto, String token, Long foodId) {
         createValidator.validate(dto);
         User user = userService.getRawByToken(token);
 
-        Optional<Food> optFood = foodRepository.findById(foodId);
-        if (optFood.isEmpty()) {
-            throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
-        }
-        Food food = optFood.get();
+        Food food = foodRepository.findByIdWithRestaurant(foodId).orElseThrow(() -> new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage()));
 
         FoodReview review = new FoodReview();
         review.setReview(dto.getReview());
@@ -93,6 +95,7 @@ public class FoodReviewService {
     @Transactional
     public void deleteFoodReview(Long reviewId, String token) {
         User user = userService.getRawByToken(token);
+
         Optional<FoodReview> optReview = foodReviewRepository.findById(reviewId);
         if (optReview.isEmpty()) {
             throw new NotFoundException(ErrorStrings.INVALID_FOOD_REVIEW_ID.getMessage());

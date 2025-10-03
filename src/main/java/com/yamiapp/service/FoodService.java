@@ -5,10 +5,10 @@ import com.backblaze.b2.client.exceptions.B2Exception;
 import com.backblaze.b2.client.structures.B2FileVersion;
 import com.yamiapp.exception.*;
 import com.yamiapp.model.Food;
+import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.Restaurant;
-import com.yamiapp.model.dto.FoodDTO;
-import com.yamiapp.model.dto.FoodResponseDTO;
-import com.yamiapp.model.dto.UserLoginDTO;
+import com.yamiapp.model.dto.*;
+import com.yamiapp.model.projection.FoodWithReviewProjection;
 import com.yamiapp.repo.FoodRepository;
 import com.yamiapp.repo.RestaurantRepository;
 import com.yamiapp.util.ResponseFactory;
@@ -19,14 +19,21 @@ import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.yamiapp.util.ServiceUtils.convertToJPEG;
 import static com.yamiapp.util.ServiceUtils.validateModeratorUser;
@@ -160,8 +167,59 @@ public class FoodService {
         foodRepository.delete(f);
     }
 
+    public Map<Integer, Long> getFoodStats(Long id) {
+        if (!foodRepository.existsById(id)) {
+            throw new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage());
+        }
+
+        try {
+            List<RatingDistributionEntry> ratingDistributionEntries = foodRepository.getRatingDistribution(id);
+
+            Map<Integer, Long> ratingMap = IntStream.rangeClosed(0, 20)
+                .boxed()
+                .collect(Collectors.toMap(
+                    key -> key,
+                    value -> 0L
+                ));
+
+            ratingDistributionEntries.forEach(entry -> {
+                if (entry.key() != null && entry.value() != null) {
+                    ratingMap.put(entry.key(), entry.value());
+                }
+            });
+
+            return ratingMap;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     public FoodResponseDTO getById(Long id) {
         return new FoodResponseDTO(getRawById(id));
+    }
+
+    public FoodResponseDTO getByIdAuthenticated(Long id, String token) {
+        FoodWithReviewProjection projection = foodRepository.findFoodByIdWithUserReviewProjection(id, token)
+            .orElseThrow(() -> new NotFoundException(ErrorStrings.INVALID_FOOD_ID.getMessage()));
+
+        FoodResponseDTO response = new FoodResponseDTO(
+            projection.foodId(),
+            projection.foodName(),
+            projection.foodDescription(),
+            Math.toIntExact(projection.restaurantId()),
+            projection.restaurantName(),
+            projection.restaurantShortName(),
+            projection.avgRating()
+        );
+
+        if (projection.userReview() != null && projection.userRating() != null) {
+            response.setReview(new FoodResponseDTO.EmbeddedReview(
+                projection.userReview(),
+                projection.userRating()
+            ));
+        }
+
+        return response;
     }
 
     public Food getRawById(Long id) {
@@ -184,6 +242,7 @@ public class FoodService {
         return backblazeService.downloadFile(photoPath);
     }
 
+
     public List<Food> getRawByRestaurantId(Long id) {
         return foodRepository.getRestaurantFoods(id);
     }
@@ -191,4 +250,5 @@ public class FoodService {
     public List<FoodResponseDTO> getByRestaurantId(Long id) {
         return getRawByRestaurantId(id).stream().map(FoodResponseDTO::new).toList();
     }
+
 }

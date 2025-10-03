@@ -35,9 +35,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query(value = """
         select r.rating as k, COUNT(*) as v\
-        from food_reviews r\
-        where r.user_id = :userId\
-        group by r.rating\
+        from food_reviews r
+        where r.user_id = :userId
+        group by r.rating
     """, nativeQuery = true)
     List<RatingDistributionEntry> getRatingDistribution(@Param("userId") Long userId);
 

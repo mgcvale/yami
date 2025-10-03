@@ -83,7 +83,7 @@ public class RestaurantController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getRestaurantData(@PathVariable Integer id) {
-        return ResponseEntity.ok().body(restaurantService.getById(id));
+        return ResponseEntity.ok().body(restaurantService.getByIdWithMetrics(id));
     }
 
     @GetMapping("/{id}/picture")

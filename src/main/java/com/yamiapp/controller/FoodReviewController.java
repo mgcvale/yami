@@ -37,8 +37,8 @@ public class FoodReviewController {
     ) {
         String token = ControllerUtils.extractToken(authHeader);
 
-        FoodReview r = foodReviewService.createFoodReview(dto, token, id);
-        return ResponseEntity.ok().body(new FoodReviewResponseDTO(r));
+        FoodReviewResponseDTO r = foodReviewService.createFoodReview(dto, token, id);
+        return ResponseEntity.ok().body(r);
     }
 
     @DeleteMapping("/{id}")

@@ -9,6 +9,7 @@ import com.yamiapp.model.dto.FoodReviewResponseDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
 import com.yamiapp.service.FoodReviewService;
 import com.yamiapp.service.FoodService;
+import com.yamiapp.service.UserService;
 import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
@@ -81,9 +82,18 @@ public class FoodController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getById(@PathVariable Long id) {
-        return ResponseEntity.ok().body(foodService.getById(id));
+    public ResponseEntity<FoodResponseDTO> getById(
+        @PathVariable Long id,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader
+    ) {
+        if (authHeader == null) {
+            return ResponseEntity.ok().body(foodService.getById(id));
+        }
+
+        String token = ControllerUtils.extractToken(authHeader);
+        return ResponseEntity.ok().body(foodService.getByIdAuthenticated(id, token));
     }
+
 
     @GetMapping("/{id}/picture")
     public ResponseEntity<Object> getPictureById(@PathVariable Long id) throws B2Exception {
@@ -110,9 +120,19 @@ public class FoodController {
         return new ResponseFactory.JsonResponseChain().add("average", avg).build();
     }
 
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<Object> getFoodStats(@PathVariable Long id) {
+        return ResponseEntity.ok().body(foodService.getFoodStats(id));
+    }
+
     @GetMapping("/by_restaurant/{id}")
     public ResponseEntity<Object> getFoodsByRestaurant(@PathVariable Long id) {
         return ResponseEntity.ok().body(foodService.getByRestaurantId(id));
+    }
+
+    @GetMapping("/by_restaurant/{id}/search/{query}")
+    public ResponseEntity<Object> getFoodsByRestaurantAndQuery(@PathVariable Long id, @PathVariable String query) {
+        return ResponseEntity.ok().build();
     }
 
 }

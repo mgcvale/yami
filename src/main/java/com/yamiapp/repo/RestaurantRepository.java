@@ -14,8 +14,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
     @Query("""
         SELECT new com.yamiapp.model.dto.RestaurantResposneDTO(
             r.id, r.name, r.shortName, r.description,
-            COALESCE(COUNT(DISTINCT f.id), 0),
-            COALESCE(COUNT(DISTINCT fr.id), 0)
+            CAST(COALESCE(COUNT(DISTINCT f.id), 0L) AS LONG),
+            CAST(COALESCE(COUNT(DISTINCT fr.id), 0L) AS LONG)
         )
         FROM Restaurant  r
         LEFT JOIN r.foods f
@@ -30,8 +30,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
     @Query("""
         SELECT new com.yamiapp.model.dto.RestaurantResposneDTO(
             r.id, r.name, r.shortName, r.description,
-            COALESCE(COUNT(DISTINCT f.id), 0),
-            COALESCE(COUNT(DISTINCT fr.id), 0)
+            CAST(COALESCE(COUNT(DISTINCT f.id), 0L) AS LONG),
+            CAST(COALESCE(COUNT(DISTINCT fr.id), 0L) AS LONG)
         )
         FROM Restaurant r
         LEFT JOIN r.foods f

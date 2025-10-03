@@ -214,7 +214,7 @@ public class UserService {
 
     public Page<UserResponseDTO> searchUsersUnauthenticated(String searchParams, Pageable pageable) {
         Page<User> users = userRepository.getUsersByAnonymousSearch("%" + searchParams + "%", pageable);
-        return users.map(user -> new UserResponseDTO(user).withoutSensitiveData());
+        return users.map(user -> new UserResponseDTO(user).withoutSensitiveData().withCounts(getUserCounts(user.getId())).withFollowing(false)); // TODO: optimize queries
     }
 
     public Page<UserResponseDTO> searchUsersAuthenticated(String searchParams, String accessToken, Pageable pageable) {
@@ -243,7 +243,7 @@ public class UserService {
                 if (result.size() >= pageSize || userIds.contains(user.getId())) {
                     continue;
                 }
-                result.add(new UserResponseDTO(user).withoutSensitiveData());
+                result.add(new UserResponseDTO(user).withoutSensitiveData().withCounts(getUserCounts(user.getId())).withFollowing(false)); // TODO: Make this query efficient
                 userIds.add(user.getId());
             }
         };
