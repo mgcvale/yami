@@ -57,19 +57,19 @@ public class UserFollowService {
         userRepository.save(unfollower);
     }
 
-    public Set<UserResponseDTO> getFollowers(Long userId) {
+    public List<UserResponseDTO> getFollowers(Long userId) {
         User user = userService.getRawById(userId);
         Set<User> followers = user.getFollowers();
 
-        Set<UserResponseDTO> followersMapped = followers.stream().map(u -> new UserResponseDTO(u).withoutSensitiveData()).collect(Collectors.toSet());
+        List<UserResponseDTO> followersMapped = followers.stream().map(u -> new UserResponseDTO(u).withoutSensitiveData()).collect(Collectors.toList());
         return followersMapped;
     }
 
-    public Set<UserResponseDTO> getFollowing(Long userId) {
+    public List<UserResponseDTO> getFollowing(Long userId) {
         User user = userService.getRawById(userId);
         Set<User> following = user.getFollowing();
 
-        Set<UserResponseDTO> followingMapped = following.stream().map(u -> new UserResponseDTO(u).withoutSensitiveData()).collect(Collectors.toSet());
+        List<UserResponseDTO> followingMapped = following.stream().map(u -> new UserResponseDTO(u).withoutSensitiveData()).collect(Collectors.toList());
         return followingMapped;
     }
 

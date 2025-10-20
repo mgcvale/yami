@@ -159,6 +159,11 @@ public class FoodReviewService {
         }
     }
 
+    public Page<FoodReviewResponseDTO> getFoodReviewsByFollowers(String authToken, Pageable pageable) {
+        Page<FoodReviewResponseDTO> foodReviews = foodReviewRepository.findUserFeed(authToken, pageable);
+        return foodReviews;
+    }
+
     public Page<FoodReview> getFoodReviewByRestaurant(Long restaurantId, Pageable pageable) {
         return foodReviewRepository.getFoodReviewsByRestaurantId(restaurantId, pageable);
     }

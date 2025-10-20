@@ -214,6 +214,7 @@ public class FoodService {
 
         if (projection.userReview() != null && projection.userRating() != null) {
             response.setReview(new FoodResponseDTO.EmbeddedReview(
+                projection.reviewId(),
                 projection.userReview(),
                 projection.userRating()
             ));

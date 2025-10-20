@@ -10,7 +10,7 @@ import java.util.Objects;
 @Setter
 public class FoodResponseDTO {
 
-    public record EmbeddedReview(String review, Integer rating) {}
+    public record EmbeddedReview(Long id, String review, Integer rating) {}
 
     private Long id;
     private String name;

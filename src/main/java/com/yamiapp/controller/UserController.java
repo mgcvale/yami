@@ -1,5 +1,6 @@
 package com.yamiapp.controller;
 
+import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.User;
 import com.yamiapp.model.dto.*;
 import com.yamiapp.service.FoodReviewService;
@@ -8,6 +9,7 @@ import com.yamiapp.service.UserService;
 import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +21,12 @@ public class UserController {
 
     private final UserService userService;
     private final UserFollowService userFollowService;
+    private final FoodReviewService foodReviewService;
 
-    public UserController(UserService userService, UserFollowService userFollowService) {
+    public UserController(UserService userService, UserFollowService userFollowService, FoodReviewService foodReviewService) {
         this.userService = userService;
         this.userFollowService = userFollowService;
+        this.foodReviewService = foodReviewService;
     }
 
     @PostMapping("")
@@ -85,4 +89,15 @@ public class UserController {
         ));
     }
 
+    @GetMapping("/feed")
+    public ResponseEntity<Page<FoodReviewResponseDTO>> getUserFeed(
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
+        @RequestParam(defaultValue =  "0") Integer offset,
+        @RequestParam(defaultValue =  "20") Integer count
+    ) {
+        String token = ControllerUtils.extractToken(authHeader);
+        Pageable pageable = Pageable.ofSize(count).withPage(offset);
+
+        return ResponseEntity.ok(foodReviewService.getFoodReviewsByFollowers(token, pageable));
+    }
 }

@@ -33,4 +33,22 @@ public class FoodReviewResponseDTO {
         this.restaurantName = foodReview.getFood().getRestaurant().getName();
         this.restaurantShortName = foodReview.getFood().getRestaurant().getShortName();
     }
+
+    public FoodReviewResponseDTO(
+        Long id, String review, Integer rating,
+        Long userId, String username,
+        Long foodId, String foodName,
+        Long restaurantId, String restaurantName, String restaurantShortName
+    ) {
+        this.id = id;
+        this.review = review;
+        this.rating = rating;
+        this.userId = userId;
+        this.username = username;
+        this.foodId = foodId;
+        this.foodName = foodName;
+        this.restaurantId = restaurantId;
+        this.restaurantName = restaurantName;
+        this.restaurantShortName = restaurantShortName;
+    }
 }

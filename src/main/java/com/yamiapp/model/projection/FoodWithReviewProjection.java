@@ -9,5 +9,6 @@ public record FoodWithReviewProjection(
     String restaurantShortName,
     Double avgRating,
     String userReview,
-    Integer userRating
+    Integer userRating,
+    Long reviewId
 ) {}

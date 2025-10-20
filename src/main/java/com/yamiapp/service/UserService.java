@@ -88,10 +88,10 @@ public class UserService {
         if (dto.getBio() != null) u.setBio(dto.getBio());
         if (dto.getLocation() != null) u.setLocation(dto.getLocation());
         if (dto.getEmail() != null) u.setEmail(dto.getEmail().toLowerCase());
+        if (dto.getUsername() != null) u.setUsername(dto.getUsername());
 
         try {
-            User newU = userRepository.save(u);
-            return newU;
+            return userRepository.save(u);
         } catch (DataIntegrityViolationException e) {
             if (e.getCause() instanceof ConstraintViolationException) {
                 if (e.getMessage().contains("username_unique"))

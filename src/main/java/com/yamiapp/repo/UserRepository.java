@@ -56,6 +56,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         AND LOWER(f2.username) iLIKE LOWER(:search)
         AND f2.id <> :userId
     """)
+
     Page<User> findSecondDegree(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
 
     @Query("""

@@ -1,6 +1,7 @@
 package com.yamiapp.repo;
 
 import com.yamiapp.model.Food;
+import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.dto.RatingDistributionEntry;
 import com.yamiapp.model.projection.FoodWithReviewProjection;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +37,7 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
     @Query("""
     SELECT new com.yamiapp.model.projection.FoodWithReviewProjection(
         f.id, f.name, f.description, r.id, r.name, r.shortName, f.avgRating,
-        fr.review, fr.rating
+        fr.review, fr.rating, fr.id
     )
     FROM Food f
     LEFT JOIN f.restaurant r
@@ -55,5 +56,6 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
 
     @Query("select f from Food f join fetch f.restaurant where f.id = :id")
     Optional<Food> findByIdWithRestaurant(@Param("id") Long id);
+
 
 }
