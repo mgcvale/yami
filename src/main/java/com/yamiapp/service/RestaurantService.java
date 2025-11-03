@@ -4,6 +4,7 @@ import com.backblaze.b2.client.exceptions.B2Exception;
 import com.backblaze.b2.client.structures.B2FileVersion;
 import com.yamiapp.exception.*;
 import com.yamiapp.model.Restaurant;
+import com.yamiapp.model.User;
 import com.yamiapp.model.dto.RestaurantDTO;
 import com.yamiapp.model.dto.RestaurantResposneDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
@@ -26,7 +27,10 @@ import static com.yamiapp.util.ServiceUtils.convertToJPEG;
 import static com.yamiapp.util.ServiceUtils.validateModeratorUser;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class RestaurantService {
@@ -173,5 +177,11 @@ public class RestaurantService {
         } catch (Exception e) {
             throw new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage());
         }
+    }
+
+    public List<RestaurantResposneDTO> findRestaurantReccomendations(User u, boolean stochastic) {
+        List<RestaurantResposneDTO> allRestaurants = restaurantRepository.findRestaurantReccomendations(u);
+        // TODO: add stochastic process
+        return allRestaurants;
     }
 }

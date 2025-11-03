@@ -1,9 +1,12 @@
 package com.yamiapp.controller;
 
 import com.backblaze.b2.client.exceptions.B2Exception;
+import com.yamiapp.model.User;
 import com.yamiapp.model.dto.RestaurantDTO;
+import com.yamiapp.model.dto.RestaurantResposneDTO;
 import com.yamiapp.model.dto.UserLoginDTO;
 import com.yamiapp.service.RestaurantService;
+import com.yamiapp.service.UserService;
 import com.yamiapp.util.ControllerUtils;
 import com.yamiapp.util.MessageStrings;
 import com.yamiapp.util.ResponseFactory;
@@ -14,14 +17,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/restaurant")
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
+    private final UserService userService;
 
-    public RestaurantController(RestaurantService restaurantService) {
+    public RestaurantController(RestaurantService restaurantService, UserService userService) {
         this.restaurantService = restaurantService;
+        this.userService = userService;
     }
 
 
@@ -91,6 +98,14 @@ public class RestaurantController {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(restaurantService.getImageById(id));
     }
 
-
+    @GetMapping("/reccomendations")
+    public ResponseEntity<List<RestaurantResposneDTO>> findRestaurantReccomendations(
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
+        @RequestParam(value = "stochastic", required = false, defaultValue = "true") boolean stochastic
+    ) {
+        String token = ControllerUtils.extractToken(authHeader);
+        User u = userService.getRawByToken(token);
+        return ResponseEntity.ok(restaurantService.findRestaurantReccomendations(u, stochastic));
+    }
 
 }

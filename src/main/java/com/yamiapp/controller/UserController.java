@@ -1,6 +1,5 @@
 package com.yamiapp.controller;
 
-import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.User;
 import com.yamiapp.model.dto.*;
 import com.yamiapp.service.FoodReviewService;

@@ -51,7 +51,6 @@ public interface FoodReviewRepository extends JpaRepository<FoodReview, Long> {
             JOIN me.following f
             WHERE me.accessToken = :accessToken
         )
-        OR fr.user.accessToken = :accessToken
         ORDER BY fr.createdAt DESC
     """)
     Page<FoodReviewResponseDTO> findUserFeed(@Param("accessToken") String userToken, Pageable pageable);
