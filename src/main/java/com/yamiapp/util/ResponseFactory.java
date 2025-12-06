@@ -29,31 +29,31 @@ public class ResponseFactory {
         }
     }
 
-    public static ResponseEntity<Object> createErrorResponse(Exception e, int status) {
+    public static ResponseEntity<Map<String, String>> createErrorResponse(Exception e, int status) {
         Map<String, String> response = new HashMap<>();
         response.put("status", "error");
         response.put("message", e.getMessage());
         return ResponseEntity.status(status).body(response);
     }
 
-    public static ResponseEntity<Object> createSuccessResponse(String msg, int status) {
+    public static ResponseEntity<Map<String, String>> createSuccessResponse(String msg, int status) {
         Map<String, String> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", msg);
         return ResponseEntity.status(status).body(response);
     }
 
-    public static ResponseEntity<Object> createSuccessResponse(int status) {
+    public static ResponseEntity<Map<String, String>> createSuccessResponse(int status) {
         Map<String, String> response = new HashMap<>();
         response.put("status", "success");
         return ResponseEntity.status(status).body(response);
     }
 
-    public static ResponseEntity<Object> createSuccessResponse(String msg) {
+    public static ResponseEntity<Map<String, String>> createSuccessResponse(String msg) {
         return createSuccessResponse(msg, 200);
     }
 
-    public static ResponseEntity<Object> createSuccessResponse() {
+    public static ResponseEntity<Map<String, String>> createSuccessResponse() {
         return createSuccessResponse(200);
     }
 

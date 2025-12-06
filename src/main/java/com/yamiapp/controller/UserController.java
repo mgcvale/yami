@@ -106,14 +106,14 @@ public class UserController {
     }
 
     @PostMapping("/request-reset")
-    public ResponseEntity<String> requestPasswordReset(@RequestBody Map<String, String> body) {
+    public ResponseEntity<Map<String, String>> requestPasswordReset(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         passwordRecoveryService.requestRecovery(email);
-        return ResponseEntity.ok().body(MessageStrings.RECOVERY_REQUEST_SUCCESS.getMessage());
+        return ResponseFactory.createSuccessResponse(MessageStrings.RECOVERY_REQUEST_SUCCESS.getMessage());
     }
 
     @PostMapping("/password-reset")
-    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> body) {
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> body) {
         String newPassword = body.get("password");
         String token = body.get("token");
 
@@ -122,6 +122,6 @@ public class UserController {
         if (token == null) token = "";
 
         passwordRecoveryService.resetPassword(token, newPassword);
-        return ResponseEntity.ok().body(MessageStrings.RECOVERY_SUCCESS.getMessage());
+        return ResponseFactory.createSuccessResponse(MessageStrings.RECOVERY_SUCCESS.getMessage());
     }
 }
