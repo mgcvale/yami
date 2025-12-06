@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -37,14 +38,17 @@ public class UserService {
     private final UserCreateRequestValidator createValidator;
     private final UserEditRequestValidator editValidator;
     private final UserLoginRequestValidator loginValidator;
+    private final UsernameTransactionHelper usernameTransactionHelper;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UsernameTransactionHelper usernameTransactionHelper) {
         this.userRepository = userRepository;
         this.encoder = new BCryptPasswordEncoder();
         this.createValidator = new UserCreateRequestValidator();
         this.editValidator = new UserEditRequestValidator();
         this.loginValidator = new UserLoginRequestValidator();
+        this.usernameTransactionHelper = usernameTransactionHelper;
+
     }
 
     public User createRawUser(UserDTO dto) {
@@ -76,19 +80,23 @@ public class UserService {
         }
     }
 
+
+
     public User updateRawUser(User u, UserDTO dto) {
         editValidator.validate(dto);
+
+        if (dto.getUsername() != null) {
+            u = usernameTransactionHelper.updateUsername(u, dto.getUsername());
+        }
 
         if (dto.getPassword() != null) {
             System.out.println("Password is not null");
             u.setPasswordHash(encoder.encode(dto.getPassword()));
             u.setAccessToken(UUID.randomUUID().toString());
         }
-        if (dto.getUsername() != null) u.setUsername(dto.getUsername());
         if (dto.getBio() != null) u.setBio(dto.getBio());
         if (dto.getLocation() != null) u.setLocation(dto.getLocation());
         if (dto.getEmail() != null) u.setEmail(dto.getEmail().toLowerCase());
-        if (dto.getUsername() != null) u.setUsername(dto.getUsername());
 
         try {
             return userRepository.save(u);
