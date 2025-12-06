@@ -47,8 +47,7 @@ public enum ErrorStrings {
     FOOD_DOESNT_HAVE_PHOTO("This food doesn't have a picture of it."),
     INVALID_USER_EMAIL("No user was found with this email."),
     REDIS_ERROR("An error occurred with the Redis database. Try again later"),
-    MAIL_ERROR("An error occurred with our mailing service."),
-    INVALID_TOKEN("The token you provided is either invalid or expired.");
+    MAIL_ERROR("An error occurred with our mailing service.");
 
     private final String message;
 
