@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/restaurant")
@@ -33,7 +34,7 @@ public class RestaurantController {
 
 
     @PostMapping
-    public ResponseEntity<Object> createRestaurant(
+    public ResponseEntity<Map<String, String>> createRestaurant(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "description", required = false) String description,
@@ -48,7 +49,7 @@ public class RestaurantController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Object> updateRestaurant(
+    public ResponseEntity<Map<String, String>> updateRestaurant(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @PathVariable Integer id,
             @RequestParam(value = "name", required = false) String name,
@@ -64,7 +65,7 @@ public class RestaurantController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteRestaurant(
+    public ResponseEntity<Map<String, String>> deleteRestaurant(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "email", required = false) String email,

@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.util.Map;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -25,7 +27,7 @@ public class GlobalExceptionHandler {
 
     // Internal exceptions
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Object> handleBadRequest(BadRequestException e) {
+    public ResponseEntity<Map<String, String>> handleBadRequest(BadRequestException e) {
         logger.info("Handling BadRequestException: {}", e.getMessage());
         if (e.getMessage().equals(ErrorStrings.INVALID_USERNAME.getMessage())) {
             return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()), HttpStatus.UNAUTHORIZED.value());
@@ -34,7 +36,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Object> handleBadRequest(NotFoundException e) {
+    public ResponseEntity<Map<String, String>> handleBadRequest(NotFoundException e) {
         logger.info("Handling NotFoundException: {}", e.getMessage());
         if (e.getMessage().equals(ErrorStrings.INVALID_USERNAME.getMessage())) {
             return ResponseFactory.createErrorResponse(new UnauthorizedException(ErrorStrings.INVALID_USERNAME_OR_PASSWORD.getMessage()), HttpStatus.UNAUTHORIZED.value());
@@ -43,45 +45,45 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<Object> handleConflict(ConflictException e) {
+    public ResponseEntity<Map<String, String>> handleConflict(ConflictException e) {
         logger.info("Handling ConflictException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(e, HttpStatus.CONFLICT.value());
     }
 
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Object> handleUnauthorized(UnauthorizedException e) {
+    public ResponseEntity<Map<String, String>> handleUnauthorized(UnauthorizedException e) {
         logger.info("Handling UnauthorizedException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(e, HttpStatus.UNAUTHORIZED.value());
     }
 
     @ExceptionHandler(InternalServerException.class)
-    public ResponseEntity<Object> handleInternalServer(InternalServerException e) {
+    public ResponseEntity<Map<String, String>> handleInternalServer(InternalServerException e) {
         e.printStackTrace();
         logger.info("Handling InternalServerException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
     @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<Object> handleForbidden(ForbiddenException e) {
+    public ResponseEntity<Map<String, String>> handleForbidden(ForbiddenException e) {
         logger.info("Handling ForbiddenException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(e, HttpStatus.FORBIDDEN.value());
     }
 
     @ExceptionHandler(BadGatewayException.class)
-    public ResponseEntity<Object> handleBadGateway(BadGatewayException e) {
+    public ResponseEntity<Map<String, String>> handleBadGateway(BadGatewayException e) {
         logger.info("Handling BadGatewayException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(e, HttpStatus.BAD_GATEWAY.value());
     }
 
     // External exceptions
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException e) {
+    public ResponseEntity<Map<String, String>> handleEntityNotFound(EntityNotFoundException e) {
         logger.info("Handling EntityNotFoundException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new NotFoundException(ErrorStrings.NOT_FOUND.getMessage()), HttpStatus.NOT_FOUND.value());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
         logger.info("Handling DataIntegrityException: {}", e.getMessage());
         e.printStackTrace();
         if (e.getCause() instanceof ConstraintViolationException) {
@@ -91,62 +93,62 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException e) {
+    public ResponseEntity<Map<String, String>> handleConstraintViolation(ConstraintViolationException e) {
         logger.info("Handling ConstraintViolationException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new ConflictException(ErrorStrings.CONFLICT.getMessage()), HttpStatus.CONFLICT.value());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleGenericException(Exception e) {
+    public ResponseEntity<Map<String, String>> handleGenericException(Exception e) {
         logger.info("Handling GenericException: {}", e.getMessage());
         e.printStackTrace();
         return ResponseFactory.createErrorResponse(new InternalServerException(ErrorStrings.INTERNAL_UNKNOWN.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Object> handleNoResourceFound(NoResourceFoundException e) {
+    public ResponseEntity<Map<String, String>> handleNoResourceFound(NoResourceFoundException e) {
         logger.info("Handling NoResourceFoundException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new NotFoundException(ErrorStrings.INVALID_PATH.getMessage()), HttpStatus.NOT_FOUND.value());
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<Object> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException e) {
+    public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException e) {
         logger.info("Handling MaxUploadSizeExceededException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new PayloadTooLargeException(ErrorStrings.FILE_TOO_LARGE.getMessage()), HttpStatus.PAYLOAD_TOO_LARGE.value());
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
         logger.info("Handling HttpMessageNotReadableException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new BadRequestException(ErrorStrings.EMPTY_FIELDS.getMessage()), HttpStatus.BAD_REQUEST.value());
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException e) {
+    public ResponseEntity<Map<String, String>> handleMissingServletRequestParameter(MissingServletRequestParameterException e) {
         logger.info("Handling MissingServletRequestParameterException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new BadRequestException(ErrorStrings.EMPTY_FIELDS.getMessage()), HttpStatus.BAD_REQUEST.value());
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)
-    public ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestParameterException e) {
+    public ResponseEntity<Map<String, String>> handleMissingServletRequestPart(MissingServletRequestParameterException e) {
         logger.info("Handling MissingServletRequestPartException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new BadRequestException(ErrorStrings.EMPTY_FIELDS.getMessage()), HttpStatus.BAD_REQUEST.value());
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+    public ResponseEntity<Map<String, String>> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException e) {
         logger.info("Handling HttpRequestMethodNotSupportedException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new MethodNotAllowedException(ErrorStrings.METHOD_NOT_ALLOWED.getMessage()), HttpStatus.METHOD_NOT_ALLOWED.value());
     }
 
     @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<Object> handleInvalidToken(InvalidTokenException e) {
+    public ResponseEntity<Map<String, String>> handleInvalidToken(InvalidTokenException e) {
         logger.info("Handling InvalidTokenException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new UnauthorizedException(e.getMessage()), HttpStatus.UNAUTHORIZED.value());
     }
 
     @ExceptionHandler(HttpMediaTypeException.class)
-    public ResponseEntity<Object> handleUnsupportedMediaType(HttpMediaTypeException e) {
+    public ResponseEntity<Map<String, String>> handleUnsupportedMediaType(HttpMediaTypeException e) {
         logger.info("Handling HttpMediaTypeException: {}", e.getMessage());
         return ResponseFactory.createErrorResponse(new UnsupportedMediaTypeException(e.getMessage()), HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
     }

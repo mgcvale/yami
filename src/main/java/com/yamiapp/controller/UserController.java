@@ -59,7 +59,7 @@ public class UserController {
     }
 
     @DeleteMapping("")
-    public ResponseEntity<Object> deleteUser(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader, @RequestBody UserLoginDTO loginInfo) {
+    public ResponseEntity<Map<String, String>> deleteUser(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader, @RequestBody UserLoginDTO loginInfo) {
         String token = ControllerUtils.extractToken(authHeader);
         userService.deleteUser(token, loginInfo);
         return ResponseFactory.createSuccessResponse(MessageStrings.USER_DELETE_SUCCESS.getMessage());

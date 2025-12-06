@@ -21,7 +21,7 @@ public class UserFollowController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<Object> createFollow(
+    public ResponseEntity<Map<String, String>> createFollow(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long id
     ) {
@@ -31,7 +31,7 @@ public class UserFollowController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteFollow(
+    public ResponseEntity<Map<String, String>> deleteFollow(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long id
     ) {

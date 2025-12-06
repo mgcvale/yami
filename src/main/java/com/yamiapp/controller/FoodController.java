@@ -21,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/food")
 public class FoodController {
@@ -50,7 +52,7 @@ public class FoodController {
     }
 
     @PatchMapping("/{foodId}")
-    public ResponseEntity<Object> updateFood(
+    public ResponseEntity<Map<String, String>> updateFood(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @PathVariable Long foodId,
             @RequestParam(value = "name", required = false) String name,
@@ -67,7 +69,7 @@ public class FoodController {
     }
 
     @DeleteMapping("/{foodId}")
-    public ResponseEntity<Object> deleteFood(
+    public ResponseEntity<Map<String, String>> deleteFood(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "email", required = false) String email,

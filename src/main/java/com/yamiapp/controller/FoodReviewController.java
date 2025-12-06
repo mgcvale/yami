@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -42,7 +43,7 @@ public class FoodReviewController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteFoodReview(
+    public ResponseEntity<Map<String, String>> deleteFoodReview(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @PathVariable Long id
     ) {
