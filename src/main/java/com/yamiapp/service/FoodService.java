@@ -252,4 +252,12 @@ public class FoodService {
         return getRawByRestaurantId(id).stream().map(FoodResponseDTO::new).toList();
     }
 
+    public List<Food> searchRawRestaurantFoods(Long id, String searchQuery) {
+        return foodRepository.searchRestaurantFoods(id, searchQuery);
+    }
+
+    public List<FoodResponseDTO> searchRestaurantFoods(Long id, String searchQuery) {
+        return searchRawRestaurantFoods(id, searchQuery).stream().map(FoodResponseDTO::new).toList();
+    }
+
 }

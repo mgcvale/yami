@@ -5,6 +5,7 @@ import com.yamiapp.model.FoodReview;
 import com.yamiapp.model.dto.RatingDistributionEntry;
 import com.yamiapp.model.projection.FoodWithReviewProjection;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,8 +20,13 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
     @Query("select avg(fr.rating) from FoodReview fr where fr.food.id = :id")
     double getAverageRating(Long id);
 
+    @EntityGraph(attributePaths = {"food", "food.restaurant"})
     @Query("SELECT f FROM Food f WHERE f.restaurant.id = :id")
     List<Food> getRestaurantFoods(@Param("id") Long id);
+
+    @EntityGraph(attributePaths = {"food", "food.restaurant"})
+    @Query("SELECT f from Food f where f.restaurant.id = :id and f.name ilike %:query%")
+    List<Food> searchRestaurantFoods(@Param("id") Long id, @Param("query") String query);
 
     @Modifying(clearAutomatically = true)
     @Query(value = """
@@ -56,6 +62,5 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
 
     @Query("select f from Food f join fetch f.restaurant where f.id = :id")
     Optional<Food> findByIdWithRestaurant(@Param("id") Long id);
-
 
 }

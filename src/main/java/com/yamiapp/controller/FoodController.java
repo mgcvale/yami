@@ -3,10 +3,7 @@ package com.yamiapp.controller;
 import com.backblaze.b2.client.exceptions.B2Exception;
 import com.yamiapp.model.Food;
 import com.yamiapp.model.FoodReview;
-import com.yamiapp.model.dto.FoodDTO;
-import com.yamiapp.model.dto.FoodResponseDTO;
-import com.yamiapp.model.dto.FoodReviewResponseDTO;
-import com.yamiapp.model.dto.UserLoginDTO;
+import com.yamiapp.model.dto.*;
 import com.yamiapp.service.FoodReviewService;
 import com.yamiapp.service.FoodService;
 import com.yamiapp.service.UserService;
@@ -21,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -128,13 +126,13 @@ public class FoodController {
     }
 
     @GetMapping("/by_restaurant/{id}")
-    public ResponseEntity<Object> getFoodsByRestaurant(@PathVariable Long id) {
+    public ResponseEntity<List<FoodResponseDTO>> getFoodsByRestaurant(@PathVariable Long id) {
         return ResponseEntity.ok().body(foodService.getByRestaurantId(id));
     }
 
     @GetMapping("/by_restaurant/{id}/search/{query}")
-    public ResponseEntity<Object> getFoodsByRestaurantAndQuery(@PathVariable Long id, @PathVariable String query) {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<List<FoodResponseDTO>> getFoodsByRestaurantAndQuery(@PathVariable Long id, @PathVariable String query) {
+        return ResponseEntity.ok().body(foodService.searchRestaurantFoods(id, query));
     }
 
 }
