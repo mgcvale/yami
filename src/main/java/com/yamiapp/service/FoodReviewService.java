@@ -164,8 +164,8 @@ public class FoodReviewService {
         return foodReviews;
     }
 
-    public Page<FoodReview> getFoodReviewByRestaurant(Long restaurantId, Pageable pageable) {
-        return foodReviewRepository.getFoodReviewsByRestaurantId(restaurantId, pageable);
+    public Page<FoodReviewResponseDTO> getFoodReviewByRestaurant(Long restaurantId, Pageable pageable) {
+        return foodReviewRepository.getFoodReviewsByRestaurantId(restaurantId, pageable).map(FoodReviewResponseDTO::new);
     }
 
     public Optional<FoodReview> getFoodReviewById(Long foodReviewId) {

@@ -135,7 +135,14 @@ public class UserService {
 
         return userRepository.findByAccessToken(accessToken)
             .orElseThrow(() -> new UnauthorizedException(ErrorStrings.INVALID_TOKEN.getMessage()));
+    }
 
+    public Optional<User> getRawByEmail(String email) {
+        if (email == null) {
+            return Optional.empty();
+        }
+
+        return userRepository.findByEmail(email);
     }
 
     public UserResponseDTO getByToken(String accessToken) {

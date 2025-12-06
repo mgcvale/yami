@@ -30,6 +30,8 @@ public class UserDTO {
         );
     }
 
+    public UserDTO() {}
+
     public UserDTO withUsername(String username) {
         this.username = username;
         return this;

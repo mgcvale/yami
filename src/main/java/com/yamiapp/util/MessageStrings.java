@@ -16,7 +16,10 @@ public enum MessageStrings {
     FOOD_UPDATE_SUCCESS("Success updating food"),
     FOOD_REVIEW_DELETE_SUCCESS("Success deleting food"),
     FOLLOW_DELETE_SUCCESS("Success unfollowing user"),
-    FOLLOW_CREATE_SUCCESS("Success following user");
+    FOLLOW_CREATE_SUCCESS("Success following user"),
+    RECOVERY_REQUEST_SUCCESS("Success sending password recovery email"),
+    RECOVERY_SUCCESS("Success updating password");
+
 
 
     private final String message;

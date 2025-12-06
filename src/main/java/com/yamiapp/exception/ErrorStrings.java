@@ -34,7 +34,7 @@ public enum ErrorStrings {
     B2_CONFLICT("There already exists a file with this name."),
     B2_INTERNAL("The Backblaze service is internally unavaliable"),
     B2_UPSTREAM("The Backblaze service is unavaliable."),
-    INTERNAL_IO("An internal I/O error occourred."),
+    INTERNAL_IO("An internal I/O error occurred."),
     CONFLICT_FOOD_NAME("A food with this name already exists in this restaurant"),
     INVALID_FOOD_ID("No food was found with this ID"),
     FORBIDDEN_NOT_ADMIN("You must be an administrator to do this action."),
@@ -44,8 +44,11 @@ public enum ErrorStrings {
     NOT_OWNER_OF_FOOD_REVIEW("You are not the owner of this review."),
     INVALID_FOOD_REVIEW_ID("No food review was found with this ID"),
     CANNOT_FOLLOW_ONESELF("You cannot follow yourself."),
-    FOOD_DOESNT_HAVE_PHOTO("This food doesn't have a picture of it.");
-
+    FOOD_DOESNT_HAVE_PHOTO("This food doesn't have a picture of it."),
+    INVALID_USER_EMAIL("No user was found with this email."),
+    REDIS_ERROR("An error occurred with the Redis database. Try again later"),
+    MAIL_ERROR("An error occurred with our mailing service."),
+    INVALID_TOKEN("The token you provided is either invalid or expired.");
 
     private final String message;
 

@@ -1,5 +1,6 @@
 package com.yamiapp;
 
+import com.yamiapp.config.DotenvConfig;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,13 +16,17 @@ import java.util.logging.Logger;
 @SpringBootApplication
 public class Yami {
     public static void main(String[] args) {
-        Dotenv dotenv = Dotenv.configure()
-                .directory("./")
-                .ignoreIfMissing()
-                .load();
-        dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
-
         ConfigurableEnvironment environment = new StandardEnvironment();
+
+        Dotenv dotenv = Dotenv.configure()
+            .directory("./")
+            .ignoreIfMissing()
+            .load();
+
+        dotenv.entries().forEach(e ->
+            System.setProperty(e.getKey(), e.getValue())
+        );
+
 
         String production = System.getenv("PRODUCTION");
         if ("true".equalsIgnoreCase(production)) {

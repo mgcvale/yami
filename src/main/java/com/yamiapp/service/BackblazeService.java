@@ -47,7 +47,7 @@ public class BackblazeService {
             bucketId = client.getBucketOrNullByName(bucketName).getBucketId();
         } catch (B2Exception e) {
             e.printStackTrace();
-            System.exit(-1); // The server shouldn't keep running without backblaze
+            throw new RuntimeException(e); // server can't run without backblaze
         }
     }
 

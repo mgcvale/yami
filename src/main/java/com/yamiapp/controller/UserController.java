@@ -3,6 +3,7 @@ package com.yamiapp.controller;
 import com.yamiapp.model.User;
 import com.yamiapp.model.dto.*;
 import com.yamiapp.service.FoodReviewService;
+import com.yamiapp.service.PasswordRecoveryService;
 import com.yamiapp.service.UserFollowService;
 import com.yamiapp.service.UserService;
 import com.yamiapp.util.ControllerUtils;
@@ -14,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -21,11 +24,13 @@ public class UserController {
     private final UserService userService;
     private final UserFollowService userFollowService;
     private final FoodReviewService foodReviewService;
+    private final PasswordRecoveryService passwordRecoveryService;
 
-    public UserController(UserService userService, UserFollowService userFollowService, FoodReviewService foodReviewService) {
+    public UserController(UserService userService, UserFollowService userFollowService, FoodReviewService foodReviewService, PasswordRecoveryService passwordRecoveryService) {
         this.userService = userService;
         this.userFollowService = userFollowService;
         this.foodReviewService = foodReviewService;
+        this.passwordRecoveryService = passwordRecoveryService;
     }
 
     @PostMapping("")
@@ -98,5 +103,25 @@ public class UserController {
         Pageable pageable = Pageable.ofSize(count).withPage(offset);
 
         return ResponseEntity.ok(foodReviewService.getFoodReviewsByFollowers(token, pageable));
+    }
+
+    @PostMapping("/request-reset")
+    public ResponseEntity<String> requestPasswordReset(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        passwordRecoveryService.requestRecovery(email);
+        return ResponseEntity.ok().body(MessageStrings.RECOVERY_REQUEST_SUCCESS.getMessage());
+    }
+
+    @PostMapping("/password-reset")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> body) {
+        String newPassword = body.get("password");
+        String token = body.get("token");
+
+        // i'll do this to propagate the error to the adequate handling layers (such as EditUserValidator)
+        if (newPassword == null)  newPassword = "";
+        if (token == null) token = "";
+
+        passwordRecoveryService.resetPassword(token, newPassword);
+        return ResponseEntity.ok().body(MessageStrings.RECOVERY_SUCCESS.getMessage());
     }
 }
