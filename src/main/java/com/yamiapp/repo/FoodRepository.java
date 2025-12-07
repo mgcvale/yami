@@ -20,11 +20,9 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
     @Query("select avg(fr.rating) from FoodReview fr where fr.food.id = :id")
     double getAverageRating(Long id);
 
-    @EntityGraph(attributePaths = {"food", "food.restaurant"})
     @Query("SELECT f FROM Food f WHERE f.restaurant.id = :id")
     List<Food> getRestaurantFoods(@Param("id") Long id);
 
-    @EntityGraph(attributePaths = {"food", "food.restaurant"})
     @Query("SELECT f from Food f where f.restaurant.id = :id and f.name ilike %:query%")
     List<Food> searchRestaurantFoods(@Param("id") Long id, @Param("query") String query);
 
@@ -34,6 +32,7 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
     SET avg_rating = (
         SELECT AVG(rating)
         FROM food_reviews
+        
         WHERE food_reviews.food_id = foods.food_id
     )
     WHERE foods.food_id = :foodId
