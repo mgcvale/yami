@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/food")
@@ -105,11 +106,12 @@ public class FoodController {
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") Integer offset,
             @RequestParam(defaultValue = "50") Integer count,
-            @RequestParam(required = false, defaultValue = "") String keyword
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader
     ) {
-        Page<FoodReview> foodReviews = foodReviewService.getFoodReviewsByFoodId(id, keyword, Pageable.ofSize(count).withPage(offset));
-        Page<FoodReviewResponseDTO> responseReviews = foodReviews.map(FoodReviewResponseDTO::new);
-        return ResponseEntity.ok().body(responseReviews);
+        Optional<String> token = ControllerUtils.extractOptionalToken(authHeader);
+        Page<FoodReviewResponseDTO> foodReviews = foodReviewService.getFoodReviewsByFoodId(id, keyword, Pageable.ofSize(count).withPage(offset), token);
+        return ResponseEntity.ok().body(foodReviews);
     }
 
     @GetMapping("/{id}/average_rating")

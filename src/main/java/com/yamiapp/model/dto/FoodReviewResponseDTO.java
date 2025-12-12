@@ -21,7 +21,15 @@ public class FoodReviewResponseDTO {
     private String restaurantName;
     private String restaurantShortName;
 
+    private Boolean liked;
+    private Long likeCount;
+
+    public FoodReviewResponseDTO() {
+        this.liked = false;
+    }
+
     public FoodReviewResponseDTO(FoodReview foodReview) {
+        this();
         this.id = foodReview.getId();
         this.review = foodReview.getReview();
         this.rating = foodReview.getRating();
@@ -40,6 +48,7 @@ public class FoodReviewResponseDTO {
         Long foodId, String foodName,
         Long restaurantId, String restaurantName, String restaurantShortName
     ) {
+        this();
         this.id = id;
         this.review = review;
         this.rating = rating;
@@ -50,5 +59,12 @@ public class FoodReviewResponseDTO {
         this.restaurantId = restaurantId;
         this.restaurantName = restaurantName;
         this.restaurantShortName = restaurantShortName;
+    }
+
+    public void setLikeCount(Long likeCount) {
+        if (likeCount == null) {
+            likeCount = 0L;
+        }
+        this.likeCount = likeCount;
     }
 }
